@@ -2,15 +2,17 @@
 
 @section('content')
 <div class="container">
-    <h1 class="mb-4">Listado de Clientes</h1>
+    <h1 class="mb-4 crm-page-title">Clientes</h1>
 
-    <a href="{{ route('clientes.create') }}" class="btn btn-primary mb-3">Agregar Cliente</a>
+    <div class="text-center">
+        <a href="{{ route('clientes.create') }}" class="btn btn-crm mb-3">Agregar Cliente</a>
+    </div>
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <table class="table table-bordered">
+    <table class="table table-bordered crm-cardvar">
         <thead>
             <tr>
                 <th>Nombre</th>
@@ -18,7 +20,7 @@
                 <th>Correo</th>
                 <th>Teléfono</th>
                 <th>Rubro</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -29,13 +31,15 @@
                     <td>{{ $cliente->correo }}</td>
                     <td>{{ $cliente->telefono }}</td>
                     <td>{{ $cliente->rubro }}</td>
-                    <td>
-                        <a href="{{ route('clientes.edit', $cliente->id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    <td class="text-center">
+                        <a href="{{ route('clientes.edit', $cliente->id) }}" class="btn btn-sm btn-secondary">Editar</a>
+                        @if(auth()->user()->role === 'admin')
                         <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" style="display:inline">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">Eliminar</button>
                         </form>
+                        @endif
                     </td>
                 </tr>
             @endforeach

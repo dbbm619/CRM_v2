@@ -3,26 +3,31 @@
 @section('content')
     <div class="container">
 
-        <h1 class="mb-4">Dashboard General</h1>
+        <div class="text-center">
+                <img src="{{ asset('img/logo-sinbg.png') }}" 
+                    alt="Logo" 
+                    style="height: 200px;">
+            
+        </div>
 
         {{-- ======================= --}}
         {{--  FORMULARIO DE FILTRO   --}}
         {{-- ======================= --}}
-        <form method="GET" action="{{ route('home') }}" class="mb-4 p-3 border rounded bg-light">
+        <form method="GET" action="{{ route('home') }}" class="mb-4 p-3 border rounded crm-filter">
 
             <div class="row">
 
-                <div class="col-md-3">
+                <div class="col-md-3 text-center">
                     <label>Desde</label>
                     <input type="date" name="desde" class="form-control" value="{{ request('desde') }}">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-3 text-center">
                     <label>Hasta</label>
                     <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-3 text-center">
                     <label>Cliente</label>
                     <select name="cliente_id" class="form-control">
                         <option value="">Todos</option>
@@ -34,7 +39,7 @@
                     </select>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-3 text-center">
                     <label>Tipo Cliente</label>
                     <select name="tipo" class="form-control">
                         <option value="">Todos</option>
@@ -45,10 +50,11 @@
                 </div>
 
             </div>
-
-            <button class="btn btn-primary mt-3">Filtrar</button>
-            <a href="{{ route('home') }}" class="btn btn-secondary mt-3">Limpiar</a>
-
+            <div class="text-center">
+                <button class="btn btn-crm mt-3">Filtrar</button>
+                <a href="{{ route('home') }}" class="btn btn-secondary mt-3">Limpiar Filtros</a>
+            </div>
+          
         </form>
 
         {{-- ======================= --}}
@@ -56,49 +62,49 @@
         {{-- ======================= --}}
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="card text-white bg-primary mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Clientes Registrados</h5>
-                        <h2>{{ $totalClientes }}</h2>
-                        <a href="{{ route('clientes.index') }}" class="btn btn-light">Ver Clientes</a>
+                <div class="card text-white crm-card mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-center">Clientes Registrados</h5>
+                        <h2 class="text-center">{{ $totalClientes }}</h2>
+                        <a href="{{ route('clientes.index') }}" class="btn btn-crm">Ver Clientes</a>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card text-white bg-success mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Ventas Totales</h5>
-                        <h2>{{ $totalVentas }}</h2>
-                        <a href="{{ route('ventas.index') }}" class="btn btn-light">Ver Ventas</a>
+                <div class="card text-white crm-card mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-center">Ventas Totales</h5>
+                        <h2 class="text-center">{{ $totalVentas }}</h2>
+                        <a href="{{ route('ventas.index') }}" class="btn btn-crm">Ver Ventas</a>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card text-white bg-warning mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Facturas Emitidas</h5>
-                        <h2>{{ $totalFacturas }}</h2>
-                        <a href="{{ route('facturas.index') }}" class="btn btn-dark">Ver Facturas</a>
+                <div class="card text-white crm-card mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-center">Facturas Emitidas</h5>
+                        <h2 class="text-center">{{ $totalFacturas }}</h2>
+                        <a href="{{ route('facturas.index') }}" class="btn btn-crm">Ver Facturas</a>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6">
-                <div class="card text-white bg-secondary mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Cuenta por Cobrar (Pendientes)</h5>
-                        <h2>${{ number_format($cuentaPorCobrar, 0, ',', '.') }}</h2>
+                <div class="card text-white bg-secondary crm-cardvar mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-center">Cuenta por Cobrar (Pendientes)</h5>
+                        <h2 class="text-center">${{ number_format($cuentaPorCobrar, 0, ',', '.') }}</h2>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6">
-                <div class="card text-white bg-danger mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">Pérdidas (Canceladas)</h5>
-                        <h2>${{ number_format($perdidas, 0, ',', '.') }}</h2>
+                <div class="card text-white bg-danger crm-cardvar mb-3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-center">Pérdidas (Canceladas)</h5>
+                        <h2 class="text-center">${{ number_format($perdidas, 0, ',', '.') }}</h2>
                     </div>
                 </div>
             </div>
@@ -108,36 +114,42 @@
         {{-- ======================= --}}
         {{--        GRÁFICOS         --}}
         {{-- ======================= --}}
-        <div class="row">
+        <div class="row justify-content-around">
 
-            <div class="col-md-6">
-                <h4>Ventas por Mes</h4>
-                <canvas id="ventasMesChart"></canvas>
+            <div class="col-md-3 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Ventas por Mes</h4>
+                <canvas class="mb-3" id="ventasMesChart"></canvas>
             </div>
 
-            <div class="col-md-6">
-                <h4>Estado de Facturas</h4>
-                <canvas id="facturasEstadoChart"></canvas>
+            <div class="col-md-3 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Estado de Facturas</h4>
+                <canvas class="mb-3" id="facturasEstadoChart"></canvas>
             </div>
 
-            <div class="col-md-6 mt-5">
-                <h4>Estado de Ventas</h4>
-                <canvas id="ventasEstadoChart"></canvas>
+            <div class="col-md-3 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Estado de Ventas</h4>
+                <canvas class="mb-3" id="ventasEstadoChart"></canvas>
+            </div>
+        </div>
+        <div class="row justify-content-around">
+
+        
+            <div class="col-md-5 mt-5 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Ingresos Totales por Mes</h4>
+                <canvas class="mb-3" id="montosMesChart"></canvas>
             </div>
 
-            <div class="col-md-6 mt-5">
-                <h4>Ingresos Totales por Mes</h4>
-                <canvas id="montosMesChart"></canvas>
+            <div class="col-md-5 mt-5 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Flujo Real de Caja Mensual</h4>
+                <canvas class="mb-3" id="flujoCajaChart"></canvas>
             </div>
+        </div>
+        <div class="row justify-content-around">
 
-            <div class="col-md-6 mt-5">
-                <h4>Flujo Real de Caja Mensual</h4>
-                <canvas id="flujoCajaChart"></canvas>
-            </div>
-
-            <div class="col-md-12 mt-5">
-                <h4>Clientes con más Ventas</h4>
-                <canvas id="ventasClienteChart"></canvas>
+        
+            <div class="col-md-11 my-5 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Clientes con más Ventas</h4>
+                <canvas class="mb-3" id="ventasClienteChart"></canvas>
             </div>
 
         </div>

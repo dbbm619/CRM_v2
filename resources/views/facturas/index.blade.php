@@ -2,15 +2,16 @@
 
 @section('content')
 <div class="container">
-    <h1>Listado de Facturas</h1>
-
-    <a href="{{ route('facturas.create') }}" class="btn btn-primary mb-3">Crear Factura</a>
+    <h1 class="crm-page-title">Facturas</h1>
+    <div class="text-center">
+        <a href="{{ route('facturas.create') }}" class="btn btn-crm mb-3">Crear Factura</a>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <table class="table table-bordered">
+    <table class="table table-bordered crm-cardvar">
         <thead>
             <tr>
                 <th>ID</th>
@@ -19,7 +20,7 @@
                 <th>Venta</th>
                 <th>Fecha</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
 
@@ -37,14 +38,15 @@
                     </td>
                     <td>{{ $factura->fecha_emision }}</td>
                     <td>{{ ucfirst($factura->estado) }}</td>
-                    <td>
-                        <a href="{{ route('facturas.edit', $factura->id) }}" class="btn btn-warning btn-sm">Editar</a>
-
+                    <td class="text-center">
+                        <a href="{{ route('facturas.edit', $factura->id) }}" class="btn btn-secondary btn-sm">Editar</a>
+                        @if(auth()->user()->role === 'admin')
                         <form action="{{ route('facturas.destroy', $factura->id) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar factura?')">Eliminar</button>
                         </form>
+                        @endif
                     </td>
                 </tr>
             @endforeach

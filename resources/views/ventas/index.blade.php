@@ -2,22 +2,24 @@
 
 @section('content')
 <div class="container">
-    <h1 class="mb-4">Ventas</h1>
+    <h1 class="mb-4 crm-page-title">Ventas</h1>
 
-    <a href="{{ route('ventas.create') }}" class="btn btn-primary mb-3">Crear Venta</a>
+    <div class="text-center">
+    <a href="{{ route('ventas.create') }}" class="btn btn-crm mb-3">Crear Venta</a>
+    </div>
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <table class="table table-bordered">
+    <table class="table table-bordered crm-cardvar">
         <thead>
             <tr>
                 <th>Cliente</th>
                 <th>Monto</th>
                 <th>Fecha</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -27,9 +29,10 @@
                     <td>${{ number_format($venta->monto, 0, ',', '.') }}</td>
                     <td>{{ $venta->fecha }}</td>
                     <td>{{ ucfirst($venta->estado) }}</td>
-                    <td>
-                        <a href="{{ route('ventas.edit', $venta->id) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <td class="text-center">
+                        <a href="{{ route('ventas.edit', $venta->id) }}" class="btn btn-secondary btn-sm">Editar</a>
 
+                        @if(auth()->user()->role === 'admin')
                         <form action="{{ route('ventas.destroy', $venta->id) }}" method="POST" 
                               style="display:inline">
                             @csrf
@@ -39,7 +42,7 @@
                                 Eliminar
                             </button>
                         </form>
-
+                        @endif
                     </td>
                 </tr>
             @endforeach
