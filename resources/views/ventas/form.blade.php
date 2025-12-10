@@ -1,4 +1,4 @@
-<div class="mb-3">
+<div class="mb-3 text-center">
     <label>Cliente</label>
     <select name="cliente_id" 
             class="form-control @error('cliente_id') is-invalid @enderror">
@@ -17,18 +17,19 @@
     @enderror
 </div>
 
-<div class="mb-3">
+<div class="mb-3 text-center">
     <label>Monto</label>
     <input type="number" name="monto" 
            class="form-control @error('monto') is-invalid @enderror"
-           value="{{ old('monto', $venta->monto ?? '') }}">
+           value="{{ old('monto', $venta->monto ?? '') }}"
+           placeholder="Ingrese Monto de Venta">
 
     @error('monto')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
 
-<div class="mb-3">
+<div class="mb-3 text-center">
     <label>Fecha</label>
     <input type="date" name="fecha" 
            class="form-control @error('fecha') is-invalid @enderror"
@@ -39,7 +40,7 @@
     @enderror
 </div>
 
-<div class="mb-3">
+<div class="mb-3 text-center">
     <label>Estado</label>
     <select name="estado" 
             class="form-control @error('estado') is-invalid @enderror">

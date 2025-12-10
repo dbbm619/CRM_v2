@@ -30,7 +30,7 @@ class FacturaController extends Controller
             'venta_id' => 'required|exists:ventas,id',
             'numero_factura' => [
                 'required',
-                'regex:/^(F|F-|FAC-)\d{3,5}$/',
+                'regex:/^\d+$/',
                 'unique:facturas,numero_factura'
             ],
             'fecha_emision' => [
@@ -67,7 +67,7 @@ class FacturaController extends Controller
             'venta_id.exists' => 'La venta seleccionada no existe.',
 
             'numero_factura.required' => 'Debe ingresar un número de factura.',
-            'numero_factura.regex' => 'El número de factura debe tener un formato válido (ej: F001, F-001, FAC-0001).',
+            'numero_factura.regex' => 'Debe ingresar un numero de factura válido',
             'numero_factura.unique' => 'Este número de factura ya está registrado.',
 
             'fecha_emision.required' => 'La fecha de emisión es obligatoria.',
@@ -106,7 +106,7 @@ class FacturaController extends Controller
             'venta_id' => 'required|exists:ventas,id',
             'numero_factura' => [
                 'required',
-                'regex:/^(F|F-|FAC-)\d{3,5}$/',
+                'regex:/^\d+$/',
                 'unique:facturas,numero_factura,' . $factura->id
             ],
             'fecha_emision' => [
@@ -142,7 +142,7 @@ class FacturaController extends Controller
             'venta_id.exists' => 'La venta seleccionada no existe.',
 
             'numero_factura.required' => 'Debe ingresar un número de factura.',
-            'numero_factura.regex' => 'El número de factura debe tener un formato válido (ej: F001, F-001, FAC-0001).',
+            'numero_factura.regex' => 'Debe ingresar un numero de factura válido',
             'numero_factura.unique' => 'Este número de factura ya está registrado.',
 
             'fecha_emision.required' => 'La fecha de emisión es obligatoria.',

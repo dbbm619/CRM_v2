@@ -10,24 +10,15 @@
             
         </div>
 
-        {{-- ======================= --}}
-        {{--  FORMULARIO DE FILTRO   --}}
-        {{-- ======================= --}}
-        <form method="GET" action="{{ route('home') }}" class="mb-4 p-3 border rounded crm-filter">
+        <div class="principal">
+                    {{-- ======================= --}}
+                    {{--  FORMULARIO DE FILTRO   --}}
+                    {{-- ======================= --}}
+          <form method="GET" action="{{ route('home') }}" class="mb-4 p-3 border rounded crm-filter">
 
-            <div class="row">
+            <div class="d-flex flex-row gap-3">
 
-                <div class="col-md-3 text-center">
-                    <label>Desde</label>
-                    <input type="date" name="desde" class="form-control" value="{{ request('desde') }}">
-                </div>
-
-                <div class="col-md-3 text-center">
-                    <label>Hasta</label>
-                    <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
-                </div>
-
-                <div class="col-md-3 text-center">
+                <div class="flex-grow-1 text-center">
                     <label>Cliente</label>
                     <select name="cliente_id" class="form-control">
                         <option value="">Todos</option>
@@ -39,28 +30,38 @@
                     </select>
                 </div>
 
-                <div class="col-md-3 text-center">
+                <div class="flex-grow-1 text-center">
                     <label>Tipo Cliente</label>
                     <select name="tipo" class="form-control">
                         <option value="">Todos</option>
-                        <option value="recurrente" {{ request('tipo') == 'recurrente' ? 'selected' : '' }}>Recurrente
-                        </option>
+                        <option value="recurrente" {{ request('tipo') == 'recurrente' ? 'selected' : '' }}>Recurrente</option>
                         <option value="oneshot" {{ request('tipo') == 'oneshot' ? 'selected' : '' }}>One-Shot</option>
                     </select>
                 </div>
 
+                <div class="flex-grow-1 text-center">
+                    <label>Desde</label>
+                    <input type="date" name="desde" class="form-control" value="{{ request('desde') }}">
+                </div>
+
+                <div class="flex-grow-1 text-center">
+                    <label>Hasta</label>
+                    <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
+                </div>
+
+                <div class="d-flex align-items-end flex-grow-1 gap-2">
+                    <button class="btn btn-crm w-100">Filtrar</button>
+                    <a href="{{ route('home') }}" class="btn btn-secondary w-100">Limpiar</a>
+                </div>
+
             </div>
-            <div class="text-center">
-                <button class="btn btn-crm mt-3">Filtrar</button>
-                <a href="{{ route('home') }}" class="btn btn-secondary mt-3">Limpiar Filtros</a>
-            </div>
-          
+
         </form>
 
         {{-- ======================= --}}
         {{--  TARJETAS ESTADÍSTICAS  --}}
         {{-- ======================= --}}
-        <div class="row mb-4">
+        <div class="row mb-4 mt-5">
             <div class="col-md-4">
                 <div class="card text-white crm-card mb-3">
                     <div class="card-body text-center">
@@ -114,7 +115,7 @@
         {{-- ======================= --}}
         {{--        GRÁFICOS         --}}
         {{-- ======================= --}}
-        <div class="row justify-content-around">
+        <div class="row justify-content-around mt-5">
 
             <div class="col-md-3 crm-cardest align-content-around">
                 <h4 class="text-center mt-3">Ventas por Mes</h4>
@@ -153,8 +154,13 @@
             </div>
 
         </div>
+        </div>
+
+        
 
     </div>
+    <br>
+    <br>
 
     {{-- Cargar Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use App\Rules\ValidRut;
+
 
 class ClienteController extends Controller
 {
@@ -25,7 +27,13 @@ class ClienteController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'rut' => 'required|string|max:12|unique:clientes',
+            'rut' => [
+                'required',
+                'string',
+                'max:12',
+                'unique:clientes,rut',
+                new ValidRut()
+            ],
             'correo' => 'nullable|email',
             'telefono' => 'nullable|string|max:15',
             'rubro' => 'nullable|string|max:100',
