@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+label {
+    color: theme('colors.primary') !important;
+}
+
+button {
+    background-color: theme('colors.button') !important;
+    color: theme('colors.background') !important;
+}
+
+/* Inputs de texto */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="date"],
+input[type="tel"],
+input[type="url"] {
+    background-color: theme('colors.background') !important;
+    color: theme('colors.primary') !important;
+}
