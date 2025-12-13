@@ -19,15 +19,19 @@
 
 <div class="mb-3 text-center">
     <label>Monto</label>
-    <input type="number" name="monto" 
+
+    <input type="text" name="monto" 
            class="form-control @error('monto') is-invalid @enderror"
-           value="{{ old('monto', $venta->monto ?? '') }}"
-           placeholder="Ingrese Monto de Venta">
+           value="{{ old('monto', isset($venta->monto) ? number_format($venta->monto, 0, ',', '.') : '') }}"
+           placeholder="Ingrese Monto de Venta"
+           oninput="this.value = formatMiles(this.value)">
 
     @error('monto')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
+
+
 
 <div class="mb-3 text-center">
     <label>Fecha</label>
@@ -53,3 +57,16 @@
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
+
+<script>
+function formatMiles(value) {
+    // Quita todo lo que no sea número
+    value = value.replace(/\D/g, "");
+
+    // Si está vacío, lo retorna vacío
+    if (value === "") return "";
+
+    // Aplica puntos cada 3 dígitos
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+</script>

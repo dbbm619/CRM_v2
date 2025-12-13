@@ -2,7 +2,8 @@
     <label>Nombre:</label>
     <input type="text" name="nombre" 
            class="form-control @error('nombre') is-invalid @enderror"
-           value="{{ old('nombre', $cliente->nombre ?? '') }}" required>
+           value="{{ old('nombre', $cliente->nombre ?? '') }}" 
+           placeholder="Nombre" required>
 
     @error('nombre')
         <div class="invalid-feedback">{{ $message }}</div>
@@ -32,10 +33,12 @@
 </div>
 
 <div class="mb-3 text-center">
+<<<<<<< HEAD
     <label>Teléfono:</label>
     <input type="text" name="telefono"
            class="form-control @error('telefono') is-invalid @enderror"
-           value="{{ old('telefono', $cliente->telefono ?? '') }}">
+           value="{{ old('telefono', $cliente->telefono ?? '') }}"
+           placeholder="+569 XXXXXXXX" maxlength="13">
 
     @error('telefono')
         <div class="invalid-feedback">{{ $message }}</div>
@@ -51,6 +54,19 @@
     @error('rubro')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
+</div>
+
+<div class="mb-3 text-center">
+    <label>Rubro</label>
+    <select name="rubro" class="form-control">
+        <option value="">Seleccione un rubro</option>
+        <option value="Comercio" {{ old('rubro', $cliente->rubro ?? '') == 'Comercio' ? 'selected' : '' }}>Comercio</option>
+        <option value="Servicios" {{ old('rubro', $cliente->rubro ?? '') == 'Servicios' ? 'selected' : '' }}>Servicios</option>
+        <option value="Industria" {{ old('rubro', $cliente->rubro ?? '') == 'Industria' ? 'selected' : '' }}>Industria</option>
+        <option value="Agricultura" {{ old('rubro', $cliente->rubro ?? '') == 'Agricultura' ? 'selected' : '' }}>Agricultura</option>
+        <option value="Construcción" {{ old('rubro', $cliente->rubro ?? '') == 'Construcción' ? 'selected' : '' }}>Construcción</option>
+        <!-- Agrega más rubros según lo que necesites -->
+    </select>
 </div>
 <script>
 document.getElementById("rutInput").addEventListener("input", function () {
@@ -69,3 +85,22 @@ document.getElementById("rutInput").addEventListener("input", function () {
     }
 });
 </script>
+<script>
+const telefonoInput = document.getElementById('telefono');
+
+telefonoInput.addEventListener('input', function(e) {
+    let value = e.target.value;
+
+    // Forzar que siempre comience con '+569 '
+    if (!value.startsWith('+569 ')) {
+        value = '+569 ' + value.replace(/^\+569\s?/, '');
+    }
+
+    // Mantener solo números después del espacio y máximo 8 dígitos
+    let numeros = value.slice(5).replace(/\D/g, '').slice(0, 8);
+
+    // Actualizar el input
+    e.target.value = '+569 ' + numeros;
+});
+</script>
+

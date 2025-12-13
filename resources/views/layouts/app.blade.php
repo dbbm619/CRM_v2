@@ -177,47 +177,65 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
 
-                <ul class="navbar-nav me-auto">
-                
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" 
-                         href="{{ route('home') }}">
-                            Inicio
-                        </a>
-                    </li>
+               <ul class="navbar-nav me-auto">
+    <li class="nav-item">
+        <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" 
+            href="{{ route('home') }}">Inicio</a>
+    </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('clientes*') ? 'active' : '' }}"
-                            href="{{ route('clientes.index') }}">
-                            Clientes
-                        </a>
-                    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ request()->is('clientes*') ? 'active' : '' }}"
+            href="{{ route('clientes.index') }}">Clientes</a>
+    </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('ventas*') ? 'active' : '' }}"
-                            href="{{ route('ventas.index') }}">
-                            Ventas
-                        </a>
-                    </li>
+    <li class="nav-item">
+        <a class="nav-link {{ request()->is('ventas*') ? 'active' : '' }}"
+            href="{{ route('ventas.index') }}">Ventas</a>
+    </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->is('facturas*') ? 'active' : '' }}"
-                            href="{{ route('facturas.index') }}">
-                            Facturas
-                        </a>
-                    </li>
-                    
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                            @csrf
-                            <button type="submit" class="nav-link btn btn-link p-0 m-0 align-middle text-decoration-none" style="height: 100%;">
-                                {{ __('Cerrar Sesión') }}
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+    <li class="nav-item">
+        <a class="nav-link {{ request()->is('facturas*') ? 'active' : '' }}"
+            href="{{ route('facturas.index') }}">Facturas</a>
+    </li>
+</ul>
+
+{{-- ESTE UL ES EL QUE VA A LA DERECHA --}}
+<ul class="navbar-nav ms-auto d-flex align-items-center">
+
+    @if(Auth::check())
+        @switch(Auth::user()->role)
+            @case('admin')
+                <li class="nav-item me-3">
+                    <span class="badge bg-danger">Administrador</span>
+                </li>
+                @break
+
+            @case('gestor')
+                <li class="nav-item me-3">
+                    <span class="badge bg-success">Gestor</span>
+                </li>
+                @break
+
+            @default
+                <li class="nav-item me-3">
+                    <span class="badge bg-secondary">Usuario</span>
+                </li>
+        @endswitch
+    @endif
+
+    <li class="nav-item">
+        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+            @csrf
+            <button type="submit" class="nav-link btn btn-link p-0 m-0 text-decoration-none">
+                {{ __('Cerrar Sesión') }}
+            </button>
+        </form>
+    </li>
+
+</ul>
+
+
+
             </div>
         </div>
     </nav>
