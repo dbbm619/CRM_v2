@@ -129,4 +129,14 @@ class VentaController extends Controller
 
         return redirect()->route('ventas.index')->with('success', 'Venta eliminada correctamente.');
     }
+
+    public function restore($id)
+    {
+        $venta = Venta::onlyTrashed()->findOrFail($id);
+        $venta->restore();
+
+         return redirect()->to(
+            route('eliminados.index') . '#ventas'
+            )->with('success', 'Venta restaurada correctamente.');
+    }
 }

@@ -70,7 +70,10 @@
                 border-radius: 8px !important;
             }
 
+
             .crm-cardvar {
+                padding: 10px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.15);
                 border: 1px solid var(--crm-primary) !important;
                 border-radius: 8px !important;
             }
@@ -126,12 +129,41 @@
                 color: #0B1D5F; /* tu color secundario para enlaces y brand */
                 
             }
-
             .navbar-custom .nav-link.active {
                 
                 font-weight: bold;
-                color: #0B1D5F;
+                color: #0B1D5F;   
+            }
+
+            .nav-tabs {
+                border-bottom: 1px solid #0B1D5F;
+                font-size: 20px;
+            }
+
+            .nav-tabs .nav-link {
+                border: none;
+                border-radius: 0;
+                color: var(--crm-text); /* gris bootstrap */
+            }
+            
+            /* Hover */
+            .nav-tabs .nav-link:hover {
                 
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                background-color: rgba(165, 180, 193, 0.27);
+                box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
+            }
+
+            /* Tab activo */
+            .nav-tabs .nav-link.active {
+                border: none;
+                
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                background-color: #0B1D5F;
+                color: white;
+                font-weight: 600;
             }
 
             .navbar-custom .nav-link:hover {
@@ -184,7 +216,7 @@
     </li>
 
     <li class="nav-item">
-        <a class="nav-link {{ request()->is('clientes*') ? 'active' : '' }}"
+        <a class="nav-link {{ request()->is('clientes*') && !request()->is('clientes-eliminados*') ? 'active' : '' }}"
             href="{{ route('clientes.index') }}">Clientes</a>
     </li>
 
@@ -205,6 +237,12 @@
     @if(Auth::check())
         @switch(Auth::user()->role)
             @case('admin')
+                <li>
+                    <a class="nav-link {{ request()->is('eliminados*') ? 'active' : '' }}" href="{{ route('eliminados.index') }}" class="btn btn-outline-warning btn-sm">
+                        Papelera
+                    </a>
+                </li>
+                
                 <li class="nav-item me-3">
                     <span class="badge bg-danger">Administrador</span>
                 </li>
@@ -241,7 +279,8 @@
     </nav>
 
         @yield('content')
- 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 
     
 

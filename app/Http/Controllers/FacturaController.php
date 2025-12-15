@@ -15,6 +15,13 @@ class FacturaController extends Controller
         return view('facturas.index', compact('facturas'));
     }
 
+    public function obtenerVentasPorCliente($clienteId)
+    {
+        $ventas = Venta::where('cliente_id', $clienteId)->get();
+
+        return response()->json($ventas);
+    }
+
     public function create()
     {
         $clientes = Cliente::all();
@@ -95,12 +102,18 @@ class FacturaController extends Controller
     public function edit(Factura $factura)
     {
         $clientes = Cliente::all();
-        $ventas = Venta::with('cliente')->get();
+        // Solo las ventas asociadas al cliente de esta factura
+        $ventas = Venta::where('cliente_id', $factura->cliente_id)
+                    ->whereNull('deleted_at')
+                    ->get();
+
         return view('facturas.edit', compact('factura', 'clientes', 'ventas'));
     }
 
     public function update(Request $request, Factura $factura)
     {
+        
+
         $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
             'venta_id' => 'required|exists:ventas,id',
@@ -174,4 +187,18 @@ class FacturaController extends Controller
         return redirect()->route('facturas.index')
             ->with('success', 'Factura eliminada correctamente.');
     }
+
+    public function restore($id)
+    {
+        $factura = Factura::onlyTrashed()->findOrFail($id);
+        $factura->restore();
+
+
+        return redirect()->to(
+            route('eliminados.index') . '#facturas'
+            )->with('success', 'Factura restaurada correctamente.');
+    }
+
+    
+
 }

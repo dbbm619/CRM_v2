@@ -75,9 +75,24 @@
          <table class="table table-bordered crm-cardvar table-fixed">
         <thead>
             <tr>
-                <th>Cliente</th>
-                <th>Monto</th>
-                <th>Fecha</th>
+                <th>
+                    Cliente
+                    <button type="button" id="sortCliente" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
+                <th>
+                    Monto
+                    <button type="button" id="sortMonto" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
+                <th>
+                    Fecha
+                    <button type="button" id="sortFecha" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
                 <th>Estado</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -85,7 +100,16 @@
         <tbody>
             @foreach ($ventas as $venta)
                 <tr>
-                    <td>{{ $venta->cliente->nombre }}</td>
+                    <td>
+                    @if($venta->cliente)
+                        {{ $venta->cliente->nombre }}
+                        @if($venta->cliente->trashed())
+                            <span class="badge bg-danger text-white">Eliminado</span>
+                        @endif
+                    @else
+                        <span class="text-danger">Cliente eliminado</span>
+                    @endif
+                    </td>
                     <td>${{ number_format($venta->monto, 0, ',', '.') }}</td>
                     <td>{{ $venta->fecha }}</td>
                     <td>{{ ucfirst($venta->estado) }}</td>
@@ -267,6 +291,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // filtrar inicialmente (por si hay valores precargados)
     filtrar();
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const sortCliente = document.getElementById('sortCliente');
+    const sortMonto = document.getElementById('sortMonto');
+    const sortFecha = document.getElementById('sortFecha');
+    const tbody = document.querySelector('table tbody');
+    let clienteAsc = true, montoAsc = true, fechaAsc = true;
+
+    // Ordenar Cliente
+    sortCliente.addEventListener('click', () => {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            const clienteA = a.querySelector('td').textContent.trim().toLowerCase();
+            const clienteB = b.querySelector('td').textContent.trim().toLowerCase();
+            return clienteAsc ? clienteA.localeCompare(clienteB) : clienteB.localeCompare(clienteA);
+        });
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+        clienteAsc = !clienteAsc;
+        sortCliente.textContent = clienteAsc ? '🔽' : '🔼';
+    });
+
+    // Ordenar Monto
+    sortMonto.addEventListener('click', () => {
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+        // Tomamos el texto, quitamos $ y puntos, luego parseamos a float
+        const montoA = parseFloat(a.querySelectorAll('td')[1].textContent.replace(/\$|\./g, ''));
+        const montoB = parseFloat(b.querySelectorAll('td')[1].textContent.replace(/\$|\./g, ''));
+        return montoAsc ? montoA - montoB : montoB - montoA;
+    });
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+    montoAsc = !montoAsc;
+    sortMonto.textContent = montoAsc ? '🔽' : '🔼';
+});
+
+    // Ordenar Fecha
+    sortFecha.addEventListener('click', () => {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            const fechaA = new Date(a.querySelectorAll('td')[2].textContent);
+            const fechaB = new Date(b.querySelectorAll('td')[2].textContent);
+            return fechaAsc ? fechaA - fechaB : fechaB - fechaA;
+        });
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+        fechaAsc = !fechaAsc;
+        sortFecha.textContent = fechaAsc ? '🔽' : '🔼';
+    });
 });
 </script>
 @endsection

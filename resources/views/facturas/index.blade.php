@@ -64,10 +64,22 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>N° Factura</th>
-                <th>Cliente</th>
+                <th>N° Factura
+                    <button type="button" id="sortNumero" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
+                <th>Cliente
+                    <button type="button" id="sortCliente" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
                 <th>Venta</th>
-                <th>Fecha</th>
+                <th>Fecha
+                    <button type="button" id="sortFecha" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
                 <th>Estado</th>
                 <th class="text-center">Acciones</th>
             </tr>
@@ -250,5 +262,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
     filtrar();
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tbody = document.querySelector('table tbody');
+
+    // Variables de orden
+    let numeroAsc = true;
+    let clienteAsc = true;
+    let fechaAsc = true;
+
+  
+
+    const sortNumero = document.getElementById('sortNumero');
+    const sortCliente = document.getElementById('sortCliente');
+    const sortFecha = document.getElementById('sortFecha');
+
+    // Función para ordenar número de factura
+    sortNumero.addEventListener('click', () => {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            const numA = parseInt(a.children[1].textContent.trim());
+            const numB = parseInt(b.children[1].textContent.trim());
+            return numeroAsc ? numA - numB : numB - numA;
+        });
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+        numeroAsc = !numeroAsc;
+        sortNumero.textContent = numeroAsc ? '🔽' : '🔼';
+    });
+
+    // Función para ordenar por nombre de cliente
+    sortCliente.addEventListener('click', () => {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            const clienteA = a.children[2].textContent.trim().toLowerCase();
+            const clienteB = b.children[2].textContent.trim().toLowerCase();
+            if (clienteA < clienteB) return clienteAsc ? -1 : 1;
+            if (clienteA > clienteB) return clienteAsc ? 1 : -1;
+            return 0;
+        });
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+        clienteAsc = !clienteAsc;
+        sortCliente.textContent = clienteAsc ? '🔽' : '🔼';
+    });
+
+    // Función para ordenar por fecha
+    sortFecha.addEventListener('click', () => {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        rows.sort((a, b) => {
+            const fechaA = new Date(a.children[4].textContent.trim());
+            const fechaB = new Date(b.children[4].textContent.trim());
+            return fechaAsc ? fechaA - fechaB : fechaB - fechaA;
+        });
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+        fechaAsc = !fechaAsc;
+        sortFecha.textContent = fechaAsc ? '🔽' : '🔼';
+    });
+});
+
 </script>
 @endsection

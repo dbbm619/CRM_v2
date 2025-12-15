@@ -20,11 +20,17 @@
 <div class="mb-3 text-center">
     <label>Monto</label>
 
-    <input type="text" name="monto" 
+    <!-- Visible -->
+    <input type="text"
+           id="monto_formateado"
            class="form-control @error('monto') is-invalid @enderror"
-           value="{{ old('monto', isset($venta->monto) ? number_format($venta->monto, 0, ',', '.') : '') }}"
+           value="{{ old('monto', isset($venta) ? number_format($venta->monto, 0, ',', '.') : '') }}"
            placeholder="Ingrese Monto de Venta"
-           oninput="this.value = formatMiles(this.value)">
+           oninput="formatearMonto(this.value)">
+
+    <!-- Real -->
+    <input type="hidden" name="monto" id="monto_real"
+           value="{{ old('monto', $venta->monto ?? '') }}">
 
     @error('monto')
         <div class="invalid-feedback">{{ $message }}</div>
@@ -59,14 +65,15 @@
 </div>
 
 <script>
-function formatMiles(value) {
-    // Quita todo lo que no sea número
-    value = value.replace(/\D/g, "");
+function formatearMonto(value) {
+    // Solo números
+    let limpio = value.replace(/\D/g, '');
 
-    // Si está vacío, lo retorna vacío
-    if (value === "") return "";
+    // Setear valor real
+    document.getElementById('monto_real').value = limpio;
 
-    // Aplica puntos cada 3 dígitos
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    // Formatear visual
+    document.getElementById('monto_formateado').value =
+        limpio.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 </script>

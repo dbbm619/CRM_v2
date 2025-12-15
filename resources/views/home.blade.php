@@ -65,7 +65,7 @@
             <div class="col-md-4">
                 <div class="card text-white crm-card mb-3">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-center">Clientes Registrados</h5>
+                        <h5 class="card-title text-center">Clientes</h5>
                         <h2 class="text-center">{{ $totalClientes }}</h2>
                         <a href="{{ route('clientes.index') }}" class="btn btn-crm">Ver Clientes</a>
                     </div>
@@ -75,7 +75,7 @@
             <div class="col-md-4">
                 <div class="card text-white crm-card mb-3">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-center">Ventas Totales</h5>
+                        <h5 class="card-title text-center">Ventas Activas</h5>
                         <h2 class="text-center">{{ $totalVentas }}</h2>
                         <a href="{{ route('ventas.index') }}" class="btn btn-crm">Ver Ventas</a>
                     </div>
@@ -85,7 +85,7 @@
             <div class="col-md-4">
                 <div class="card text-white crm-card mb-3">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-center">Facturas Emitidas</h5>
+                        <h5 class="card-title text-center">Facturas Activas</h5>
                         <h2 class="text-center">{{ $totalFacturas }}</h2>
                         <a href="{{ route('facturas.index') }}" class="btn btn-crm">Ver Facturas</a>
                     </div>
@@ -95,7 +95,7 @@
             <div class="col-md-6">
                 <div class="card text-white bg-secondary crm-cardvar mb-3">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-center">Cuenta por Cobrar (Pendientes)</h5>
+                        <h5 class="card-title text-center">Ventas Pendientes por Cobrar</h5>
                         <h2 class="text-center">${{ number_format($cuentaPorCobrar, 0, ',', '.') }}</h2>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
             <div class="col-md-6">
                 <div class="card text-white bg-danger crm-cardvar mb-3">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-center">Pérdidas (Canceladas)</h5>
+                        <h5 class="card-title text-center">Ventas Canceladas</h5>
                         <h2 class="text-center">${{ number_format($perdidas, 0, ',', '.') }}</h2>
                     </div>
                 </div>
@@ -116,44 +116,56 @@
         {{--        GRÁFICOS         --}}
         {{-- ======================= --}}
         <div class="row justify-content-around mt-5">
-
             <div class="col-md-3 crm-cardest align-content-around">
-                <h4 class="text-center mt-3">Ventas por Mes</h4>
-                <canvas class="mb-3" id="ventasMesChart"></canvas>
+                <h4 class="text-center mt-3">Clientes con más Ventas</h4>
+                <canvas class="mb-3" id="ventasClienteChart"></canvas>
             </div>
-
+            
+            <div class="col-md-3 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Estado de Ventas</h4>
+                <canvas class="mb-3" id="ventasEstadoChart"></canvas>
+            </div>
             <div class="col-md-3 crm-cardest align-content-around">
                 <h4 class="text-center mt-3">Estado de Facturas</h4>
                 <canvas class="mb-3" id="facturasEstadoChart"></canvas>
             </div>
 
-            <div class="col-md-3 crm-cardest align-content-around">
-                <h4 class="text-center mt-3">Estado de Ventas</h4>
-                <canvas class="mb-3" id="ventasEstadoChart"></canvas>
+            
+        </div>
+        <div class="row justify-content-around">
+            <div class="col-md-11 mt-5 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Ventas por Mes</h4>
+                <canvas class="mb-3" id="ventasMesChart" width="200" height="70"></canvas>
             </div>
         </div>
         <div class="row justify-content-around">
 
         
-            <div class="col-md-5 mt-5 crm-cardest align-content-around">
+            <div class="col-md-11 mt-5 crm-cardest align-content-around">
                 <h4 class="text-center mt-3">Ingresos Totales por Mes</h4>
-                <canvas class="mb-3" id="montosMesChart"></canvas>
-            </div>
-
-            <div class="col-md-5 mt-5 crm-cardest align-content-around">
-                <h4 class="text-center mt-3">Flujo Real de Caja Mensual</h4>
-                <canvas class="mb-3" id="flujoCajaChart"></canvas>
+                <canvas class="mb-3" id="montosMesChart" width="200" height="70"></canvas>
             </div>
         </div>
         <div class="row justify-content-around">
-
-        
-            <div class="col-md-11 my-5 crm-cardest align-content-around">
-                <h4 class="text-center mt-3">Clientes con más Ventas</h4>
-                <canvas class="mb-3" id="ventasClienteChart"></canvas>
+            <div class="col-md-11 mt-5 crm-cardest align-content-around">
+                <h4 class="text-center mt-3">Flujo Real de Caja Mensual</h4>
+                <canvas class="mb-3" id="flujoCajaChart" width="200" height="70"></canvas>
             </div>
-
         </div>
+        <div class="row justify-content-around mt-5">
+            
+                <div class="col-md-5 crm-cardest align-content-around">
+                    <h5 class="text-center mt-3">Embudo de Ventas</h5>
+                    <canvas class="mb-3" id="embudoChart" width="200" height="70"></canvas>
+                </div>
+
+                <div class="col-md-5 crm-cardest align-content-around">
+                    <h5 class="text-center mt-3">Tasa de Conversión</h5>
+                    <canvas class="mb-3" id="tasaChart" style="max-width: 200px; max-height: 200px; margin: 0 auto; display: flex; justify-content: center; align-items: center;"></canvas>
+                </div>
+            
+        </div>
+        
         </div>
 
         
@@ -167,16 +179,41 @@
 
     <script>
         // Gráfico Ventas por Mes
+        
         const ventasMesCtx = document.getElementById('ventasMesChart').getContext('2d');
         new Chart(ventasMesCtx, {
             type: 'bar',
             data: {
-                labels: @json($ventasPorMes->keys()->map(fn($m) => "Mes $m")),
+                labels: @json($labelsMeses),
                 datasets: [{
-                    label: 'Ventas registradas',
+                    
                     data: @json($ventasPorMes->values()),
                     backgroundColor: 'rgba(54, 162, 235, 0.6)',
                 }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y; // solo el número
+                            }
+                        }
+                    }
+                },
+                
             },
         });
 
@@ -220,13 +257,44 @@
         new Chart(montosMesCtx, {
             type: 'line',
             data: {
-                labels: @json($montosPorMes->keys()->map(fn($m) => "Mes $m")),
+                labels: @json($labelsMesesMonto),
                 datasets: [{
                     label: 'Ingresos Mensuales ($)',
                     data: @json($montosPorMes->values()),
                     borderWidth: 2,
                     fill: true,
                 }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: '$ CLP',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y; // solo el número
+                            }
+                        }
+                    }
+                }
             }
         });
 
@@ -235,14 +303,47 @@
         new Chart(flujoCajaCtx, {
             type: 'line',
             data: {
-                labels: @json($flujoCaja->keys()->map(fn($m) => "Mes $m")),
+                
+                labels: @json($labelsMesesFlujo),
                 datasets: [{
                     label: 'Ingreso Real ($)',
                     data: @json($flujoCaja->values()),
                     borderWidth: 2,
                     fill: true,
                 }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: '$ CLP',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y; // solo el número
+                            }
+                        }
+                    }
+                }
             }
+            
         });
 
         // Gráfico Ventas por Cliente
@@ -257,6 +358,111 @@
                     backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 }]
             },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y; // solo el número
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        //Embudo de ventas
+        const embudoCtx = document.getElementById('embudoChart').getContext('2d');
+        new Chart(embudoCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Oportunidades', 'Clientes Activos', 'Clientes One-Shot', 'Clientes Recurrentes', 'Ventas'],
+                datasets: [{
+                    label: 'Cantidad',
+                    data: [
+                        {{ $totalOportunidades }},
+                        {{ $clientesActivos }},
+                        {{ $clientesOneShot }},
+                        {{ $clientesRecurrentes }},
+                        {{ $ventasNoCanceladas }}
+                    ],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(255, 205, 86, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(255, 99, 132, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                indexAxis: 'y', // bar horizontal para simular embudo
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.x; // número absoluto
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Medidor de tasa de conversión
+        const tasaCtx = document.getElementById('tasaChart').getContext('2d');
+        new Chart(tasaCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Convertidos', 'No Convertidos'],
+                datasets: [{
+                    data: [{{ $tasaConversion }}, {{ 100 - $tasaConversion }}],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(220, 220, 220, 0.3)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // importante para controlar tamaño
+                plugins: {
+                    legend: { display: false },
+                    
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '{{ $tasaConversion }}%',
+                        font: { size: 16, weight: 'bold' }
+                    }
+                }
+            }
         });
     </script>
 @endsection

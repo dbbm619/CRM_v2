@@ -29,11 +29,7 @@ class LoginRequest extends FormRequest
         return [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
-<<<<<<< HEAD
             'g-recaptcha-response' => ['required', 'captcha'],
-=======
-            // 'g-recaptcha-response' => ['required', 'captcha'],
->>>>>>> d98216dc2b7d15b05e9349960d2db0ad7aa6bb86
         ];
     }
 

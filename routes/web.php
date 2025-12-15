@@ -11,11 +11,31 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/eliminados', [HomeController::class, 'eliminados'])
+        ->name('eliminados.index');
+});
+
+Route::patch('/clientes/{id}/restore', [ClienteController::class, 'restore'])
+    ->name('clientes.restore');
+
+Route::patch('/ventas/{id}/restore', [VentaController::class, 'restore'])
+    ->name('ventas.restore');
+
+Route::patch('/facturas/{id}/restore', [FacturaController::class, 'restore'])
+    ->name('facturas.restore');
+
 #Route::middleware('auth')->group(function () {
 #    Route::resource('clientes', ClienteController::class);
 #    Route::resource('ventas', VentaController::class);
 #    Route::resource('facturas', FacturaController::class);
 #});
+Route::get('/clientes/{cliente}/ventas', function ($clienteId) {
+    return \App\Models\Venta::where('cliente_id', $clienteId)
+        ->whereNull('deleted_at') // si usas soft deletes
+        ->get();
+})->middleware('auth');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('clientes', ClienteController::class)
@@ -44,10 +64,22 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
-    Route::delete('/ventas/{id}', [VentaController::class, 'destroy'])->name('ventas.destroy');
-    Route::delete('/facturas/{id}', [FacturaController::class, 'destroy'])->name('facturas.destroy');
+    Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])
+        ->name('clientes.destroy');
+
+    Route::delete('/ventas/{venta}', [VentaController::class, 'destroy'])
+        ->name('ventas.destroy');
+
+    Route::delete('/facturas/{factura}', [FacturaController::class, 'destroy'])
+        ->name('facturas.destroy');
 });
 
+Route::patch('/clientes/{cliente}/restore', [ClienteController::class, 'restore'])
+    ->middleware(['auth','role:admin'])
+    ->name('clientes.restore');
+
+Route::get('/clientes-eliminados', [ClienteController::class, 'eliminados'])
+    ->middleware(['auth','role:admin'])
+    ->name('clientes.eliminados');
 
 require __DIR__.'/auth.php';

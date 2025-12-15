@@ -22,7 +22,7 @@
 
             <div class="mb-3 text-center">
                 <label>Cliente</label>
-                <select name="cliente_id" class="form-control @error('cliente_id') is-invalid @enderror">
+                <select name="cliente_id" id="clienteSelect" class="form-control @error('cliente_id') is-invalid @enderror">
                     <option value="">Seleccione un cliente</option>
                     @foreach ($clientes as $cliente)
                         <option value="{{ $cliente->id }}" {{ old('cliente_id') == $cliente->id ? 'selected' : '' }}>
@@ -37,14 +37,9 @@
 
             <div class="mb-3 text-center">
                 <label>Venta</label>
-                <select name="venta_id" class="form-control @error('venta_id') is-invalid @enderror">
+                <select name="venta_id" id="ventaSelect"
+                        class="form-control @error('venta_id') is-invalid @enderror">
                     <option value="">Seleccione una venta</option>
-                    @foreach ($ventas as $venta)
-                        <option value="{{ $venta->id }}" {{ old('venta_id') == $venta->id ? 'selected' : '' }}>
-                            Venta #{{ $venta->id }} — Cliente: {{ $venta->cliente->nombre ?? '—' }} —
-                            ${{ number_format($venta->monto, 0, ',', '.') }} — {{ $venta->fecha }}
-                        </option>
-                    @endforeach
                 </select>
                 @error('venta_id')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -93,4 +88,37 @@
         <br>
         <br>
     </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const clienteSelect = document.getElementById('clienteSelect');
+    const ventaSelect = document.getElementById('ventaSelect');
+
+    clienteSelect.addEventListener('change', async function () {
+        const clienteId = this.value;
+
+        // Reset ventas
+        ventaSelect.innerHTML = '<option value="">Seleccione una venta</option>';
+
+        if (!clienteId) return;
+
+        try {
+            const response = await fetch(`/clientes/${clienteId}/ventas`);
+            const ventas = await response.json();
+
+            ventas.forEach(venta => {
+                const option = document.createElement('option');
+                option.value = venta.id;
+                option.textContent =
+                    `Venta #${venta.id} — $${Number(venta.monto).toLocaleString('es-CL')} — ${venta.fecha}`;
+
+                ventaSelect.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error cargando ventas:', error);
+        }
+    });
+});
+</script>
 @endsection

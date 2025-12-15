@@ -53,7 +53,12 @@
     <table class="table table-bordered crm-cardvar table-fixed">
         <thead>
             <tr>
-                <th>Nombre</th>
+                <th>
+                    Nombre
+                    <button type="button" id="sortNombre" style="border: none; background: none; padding: 0; cursor: pointer;">
+                        🔽
+                    </button>
+                </th>
                 <th>RUT</th>
                 <th>Correo</th>
                 <th>Teléfono</th>
@@ -183,6 +188,28 @@ document.addEventListener("DOMContentLoaded", function () {
         filterSelect.value = "all";
         filtrar();
         searchInput.focus();
+    });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const sortBtn = document.getElementById('sortNombre');
+    const tbody = document.querySelector('table tbody');
+    let asc = true; // control del orden
+
+    sortBtn.addEventListener('click', () => {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort((a, b) => {
+            const nameA = a.querySelector('td').textContent.trim().toLowerCase();
+            const nameB = b.querySelector('td').textContent.trim().toLowerCase();
+            return asc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        });
+
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+
+        // Alterna la dirección y cambia la flecha
+        asc = !asc;
+        sortBtn.textContent = asc ? '🔽' : '🔼';
     });
 });
 </script>
