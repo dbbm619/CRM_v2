@@ -30,7 +30,6 @@
                     <option value="cliente">Cliente</option>
                     <option value="monto">Monto</option>
                     <option value="fecha">Fecha</option>
-                    <option value="estado">Estado</option>
                 </select>
             </div>
 
@@ -58,9 +57,19 @@
                 <label>Monto máximo</label>
                 <input type="number" id="maxAmount" class="form-control" placeholder="99999999">
             </div>
+            <!-- Filtro por estado -->
+            <div class="col-md-3 text-center">
+                <label>Estado</label>
+                <select id="estadoFilter" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="pagada">Pagada</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="anulada">Anulada</option>
+                </select>
+            </div>
             
             <!-- Limpiar -->
-            <div class="col-md-6 d-flex align-items-end">
+            <div class="col-md-3 d-flex align-items-end">
                 <button id="clearFilters" class="btn btn-secondary w-100">Limpiar Filtros</button>
             </div>
         </div>
@@ -112,7 +121,7 @@
                     </td>
                     <td>${{ number_format($venta->monto, 0, ',', '.') }}</td>
                     <td>{{ $venta->fecha }}</td>
-                    <td>{{ ucfirst($venta->estado) }}</td>
+                    <td>{{ ucfirst($venta->estado_formateado) }}</td>
                     <td class="text-center d-flex justify-content-around">
                         <a href="{{ route('ventas.edit', $venta->id) }}" class="btn btn-secondary btn-sm">Editar</a>
 
@@ -148,6 +157,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const maxAmount = document.getElementById("maxAmount");
     const clearBtn = document.getElementById("clearFilters");
     const resultsCount = document.getElementById("resultsCount");
+    const estadoFilter = document.getElementById("estadoFilter");
+
 
     const rows = Array.from(document.querySelectorAll("table tbody tr"));
 
@@ -199,6 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const montoNum = parseInt(montoText.replace(/\D/g, ""), 10) || 0;
             const fechaText = cols[2].textContent.trim();
             const estadoText = cols[3].textContent.toLowerCase();
+            const estadoSeleccionado = estadoFilter.value;
 
             let mostrar = true;
 
@@ -234,6 +246,13 @@ document.addEventListener("DOMContentLoaded", function () {
             if (mostrar && (montoMin !== null || montoMax !== null)) {
                 if (montoMin !== null && montoNum < montoMin) mostrar = false;
                 if (montoMax !== null && montoNum > montoMax) mostrar = false;
+            }
+
+            // FILTRO POR ESTADO (select)
+            if (mostrar && estadoSeleccionado !== "") {
+                if (estadoText !== estadoSeleccionado) {
+                    mostrar = false;
+                }
             }
 
             // Mostrar u ocultar fila
@@ -277,10 +296,13 @@ document.addEventListener("DOMContentLoaded", function () {
     dateTo.addEventListener("change", filtrar);
     minAmount.addEventListener("input", filtrar);
     maxAmount.addEventListener("input", filtrar);
+    estadoFilter.addEventListener("change", filtrar);
+
 
     clearBtn.addEventListener("click", () => {
         searchInput.value = "";
         filterType.value = "all";
+        estadoFilter.value = "";
         dateFrom.value = "";
         dateTo.value = "";
         minAmount.value = "";
@@ -297,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortMonto = document.getElementById('sortMonto');
     const sortFecha = document.getElementById('sortFecha');
     const tbody = document.querySelector('table tbody');
+    
     let clienteAsc = true, montoAsc = true, fechaAsc = true;
 
     // Ordenar Cliente

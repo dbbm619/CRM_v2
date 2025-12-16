@@ -174,21 +174,21 @@
                 overflow: hidden;
             }
 
-            table thead {
-               
-                font-weight: 600;
-            }
-
-            table td {
-                padding: 14px !important;
-            }
             .table-fixed {
                 table-layout: fixed;
+                border-collapse: collapse;
             }
 
             .table-fixed th,
             .table-fixed td {
-                word-wrap: break-word;
+                padding: 14px;
+                word-break: break-word;
+                white-space: normal;
+                vertical-align: middle;
+            }
+            .email-cell {
+                word-break: break-word;
+                
             }
     </style>
 </head>

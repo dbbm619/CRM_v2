@@ -41,12 +41,23 @@
 
                 <div class="flex-grow-1 text-center">
                     <label>Desde</label>
-                    <input type="date" name="desde" class="form-control" value="{{ request('desde') }}">
+                    <input type="date" name="desde" id="desde" class="form-control" value="{{ request('desde') }}">
                 </div>
 
                 <div class="flex-grow-1 text-center">
                     <label>Hasta</label>
-                    <input type="date" name="hasta" class="form-control" value="{{ request('hasta') }}">
+                    <input type="date" name="hasta" id="hasta" class="form-control" value="{{ request('hasta') }}">
+                </div>
+                <div class="flex-grow-1 text-center">
+                    <label>Periodo</label>
+                    <select name="periodo" class="form-control" id="periodo">
+                        <option value="">Todos</option>
+                        <option value="year">Año actual</option>
+                        <option value="semester">Semestre actual</option>
+                        <option value="four_months">Cuatrimestre actual</option>
+                        <option value="quarter">Trimestre actual</option>
+                        
+                    </select>
                 </div>
 
                 <div class="d-flex align-items-end flex-grow-1 gap-2">
@@ -66,7 +77,7 @@
                 <div class="card text-white crm-card mb-3">
                     <div class="card-body text-center">
                         <h5 class="card-title text-center">Clientes</h5>
-                        <h2 class="text-center">{{ $totalClientes }}</h2>
+                        <h2 class="text-center">{{ $clientesActivosCount}}</h2>
                         <a href="{{ route('clientes.index') }}" class="btn btn-crm">Ver Clientes</a>
                     </div>
                 </div>
@@ -104,7 +115,7 @@
             <div class="col-md-6">
                 <div class="card text-white bg-danger crm-cardvar mb-3">
                     <div class="card-body text-center">
-                        <h5 class="card-title text-center">Ventas Canceladas</h5>
+                        <h5 class="card-title text-center">Ventas Anuladas</h5>
                         <h2 class="text-center">${{ number_format($perdidas, 0, ',', '.') }}</h2>
                     </div>
                 </div>
@@ -184,9 +195,8 @@
         new Chart(ventasMesCtx, {
             type: 'bar',
             data: {
-                labels: @json($labelsMeses),
+                labels: @json($labelsVentasMes),
                 datasets: [{
-                    
                     data: @json($ventasPorMes->values()),
                     backgroundColor: 'rgba(54, 162, 235, 0.6)',
                 }]
@@ -222,10 +232,10 @@
         new Chart(facturasEstadoCtx, {
             type: 'pie',
             data: {
-                labels: @json($facturasEstado->keys()),
+                labels: @json($facturasEstadoLabels),
                 datasets: [{
                     label: 'Cantidad',
-                    data: @json($facturasEstado->values()),
+                    data: @json($facturasEstadoData),
                     backgroundColor: [
                         'rgba(255, 205, 86, 0.8)',
                         'rgba(75, 192, 192, 0.8)',
@@ -240,9 +250,9 @@
         new Chart(ventasEstadoCtx, {
             type: 'pie',
             data: {
-                labels: @json($ventasEstado->keys()),
+                labels: @json($ventasEstadoLabels),
                 datasets: [{
-                    data: @json($ventasEstado->values()),
+                    data: @json($ventasEstadoData),
                     backgroundColor: [
                         'rgba(75, 192, 192, 0.7)', // pagada
                         'rgba(255, 205, 86, 0.7)', // pendiente
@@ -257,7 +267,7 @@
         new Chart(montosMesCtx, {
             type: 'line',
             data: {
-                labels: @json($labelsMesesMonto),
+                labels: @json($labelsVentasMes),
                 datasets: [{
                     label: 'Ingresos Mensuales ($)',
                     data: @json($montosPorMes->values()),
@@ -303,8 +313,8 @@
         new Chart(flujoCajaCtx, {
             type: 'line',
             data: {
+                labels: @json($labelsVentasMes),
                 
-                labels: @json($labelsMesesFlujo),
                 datasets: [{
                     label: 'Ingreso Real ($)',
                     data: @json($flujoCaja->values()),
@@ -393,10 +403,10 @@
                     label: 'Cantidad',
                     data: [
                         {{ $totalOportunidades }},
-                        {{ $clientesActivos }},
-                        {{ $clientesOneShot }},
-                        {{ $clientesRecurrentes }},
-                        {{ $ventasNoCanceladas }}
+                        {{ $clientesActivosCount }},
+                        {{ $clientesOneShotCount }},
+                        {{ $clientesRecurrentesCount }},
+                        {{ $totalVentas }}
                     ],
                     backgroundColor: [
                         'rgba(54, 162, 235, 0.7)',
@@ -464,5 +474,70 @@
                 }
             }
         });
+  
+        document.addEventListener('DOMContentLoaded', () => {
+        const periodo = document.getElementById('periodo');
+        const desde = document.getElementById('desde');
+        const hasta = document.getElementById('hasta');
+
+        function actualizarFechasPorPeriodo() {
+            const hoy = new Date();
+            let start, end;
+            switch (periodo.value) {
+                case 'year':
+                    start = new Date(hoy.getFullYear(), 0, 1); // 1 de enero
+                    break;
+                case 'semester':
+                    if (hoy.getMonth() < 6) {
+                        start = new Date(hoy.getFullYear(), 0, 1); // 1er semestre
+                    } else {
+                        start = new Date(hoy.getFullYear(), 6, 1); // 2do semestre
+                    }
+                    break;
+                case 'quarter':
+                    const trimestre = Math.floor(hoy.getMonth() / 3);
+                    start = new Date(hoy.getFullYear(), trimestre * 3, 1);
+                    break;
+                case 'four_months':
+                    const cuatrimestre = Math.floor(hoy.getMonth() / 4);
+                    start = new Date(hoy.getFullYear(), cuatrimestre * 4, 1);
+                    break;
+                default:
+                    start = '';
+                    end = '';
+            }
+            end = new Date(hoy);
+            // Asignar fechas al input en formato yyyy-mm-dd
+            if (start && end) {
+                desde.value = start.toISOString().split('T')[0];
+                hasta.value = end.toISOString().split('T')[0];
+            } else {
+                desde.value = '';
+                hasta.value = '';
+            }
+
+            // Deshabilitar o habilitar fechas
+            desde.disabled = periodo.value !== '';
+            hasta.disabled = periodo.value !== '';
+        }
+
+        // Cambiar periodo
+        periodo.addEventListener('change', actualizarFechasPorPeriodo);
+
+        // Cambiar fechas manualmente
+        [desde, hasta].forEach(input => {
+            input.addEventListener('input', () => {
+                if (desde.value || hasta.value) {
+                    periodo.value = '';
+                    desde.disabled = false;
+                    hasta.disabled = false;
+                }
+            });
+        });
+
+        // Inicializar
+        actualizarFechasPorPeriodo();
+    });
+    
     </script>
 @endsection

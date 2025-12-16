@@ -56,7 +56,7 @@
             class="form-control @error('estado') is-invalid @enderror">
         <option value="pendiente" {{ old('estado', $venta->estado ?? '') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
         <option value="pagada" {{ old('estado', $venta->estado ?? '') == 'pagada' ? 'selected' : '' }}>Pagada</option>
-        <option value="cancelada" {{ old('estado', $venta->estado ?? '') == 'cancelada' ? 'selected' : '' }}>Cancelada</option>
+        <option value="cancelada" {{ old('estado', $venta->estado ?? '') == 'cancelada' ? 'selected' : '' }}>Anulada</option>
     </select>
 
     @error('estado')

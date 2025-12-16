@@ -25,5 +25,10 @@ class Venta extends Model
     {
         return $this->hasOne(Factura::class);
     }
+    public function getEstadoFormateadoAttribute()
+    {
+        return $this->estado === 'cancelada' ? 'anulada' : $this->estado;
+    }
+    
 }
 

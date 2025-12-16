@@ -18,13 +18,13 @@
         <div class="row">
 
             <!-- Búsqueda General -->
-            <div class="col-md-3 text-center">
+            <div class="col-md-2 text-center">
                 <label>Buscar Factura</label>
                 <input type="text" id="searchInput" class="form-control" placeholder="Mostrando Todas">
             </div>
 
             <!-- Filtro por columna -->
-            <div class="col-md-3 text-center">
+            <div class="col-md-2 text-center">
                 <label>Buscar en</label>
                 <select id="filterType" class="form-control">
                     <option value="all" selected>Todos</option>
@@ -34,6 +34,16 @@
                     <option value="venta">Venta</option>
                     <option value="fecha">Fecha</option>
                     <option value="estado">Estado</option>
+                </select>
+            </div>
+            <!-- Filtro por estado -->
+            <div class="col-md-2 text-center">
+                <label>Estado</label>
+                <select id="estadoFilter" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="emitida">Emitida</option>
+                    <option value="pagada">Pagada</option>
+                    <option value="anulada">Anulada</option>
                 </select>
             </div>
 
@@ -90,15 +100,31 @@
                 <tr>
                     <td>{{ $factura->id }}</td>
                     <td>{{ $factura->numero_factura }}</td>
-                    <td>{{ $factura->cliente->nombre ?? '—' }}</td>
+                    <td>{{ $factura->cliente->nombre ?? '—' }}
+                        @if($factura->cliente->trashed())
+                            <span class="badge bg-danger text-white">Eliminado</span>
+                        @endif
+                    </td>
                     <td>
                         Venta #{{ $factura->venta->id ?? '—' }}
                         @if(isset($factura->venta) && $factura->venta)
                             — ${{ number_format($factura->venta->monto, 0, ',', '.') }}
                         @endif
+                        @if($factura->venta->trashed())
+                            <span class="badge bg-danger text-white">Eliminada</span>
+                        @endif
                     </td>
                     <td>{{ $factura->fecha_emision }}</td>
-                    <td>{{ ucfirst($factura->estado) }}</td>
+                    <td>
+                        {{ ucfirst($factura->estado) }}
+                        @php
+                        $fechaFactura = \Carbon\Carbon::parse($factura->fecha_emision);
+                        $haceUnMes = \Carbon\Carbon::now()->subMonth();
+                    @endphp
+                    @if($fechaFactura <= $haceUnMes && $factura->estado == 'emitida')
+                        <span class="badge bg-warning text-white">Atrasada</span>
+                    @endif
+                    </td>
                     <td class="text-center">
                         <a href="{{ route('facturas.edit', $factura->id) }}" class="btn btn-secondary btn-sm">Editar</a>
                         @if(auth()->user()->role === 'admin')
@@ -130,6 +156,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultsCount = document.getElementById("resultsCount");
 
     const rows = Array.from(document.querySelectorAll("table tbody tr"));
+    const estadoFilter = document.getElementById("estadoFilter");
+
 
     function escapeRegExp(string) {
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -164,6 +192,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const fDesde = dateFrom.value ? new Date(dateFrom.value) : null;
         const fHasta = dateTo.value ? new Date(dateTo.value) : null;
+        
+        const estadoSeleccionado = estadoFilter.value;
+
+
 
 
 
@@ -213,6 +245,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (fHasta && fecha > fHasta) mostrar = false;
             }
 
+            // FILTRO POR ESTADO (select)
+            if (mostrar && estadoSeleccionado !== "") {
+                if (estadoText !== estadoSeleccionado) {
+                    mostrar = false;
+                }
+            }
+
             row.style.display = mostrar ? "" : "none";
 
             // Highlight
@@ -248,6 +287,8 @@ document.addEventListener("DOMContentLoaded", function () {
     filterType.addEventListener("change", filtrar);
     dateFrom.addEventListener("change", filtrar);
     dateTo.addEventListener("change", filtrar);
+    estadoFilter.addEventListener("change", filtrar);
+
 
 
     clearBtn.addEventListener("click", () => {
@@ -255,6 +296,8 @@ document.addEventListener("DOMContentLoaded", function () {
         filterType.value = "all";
         dateFrom.value = "";
         dateTo.value = "";
+        estadoFilter.value = "";
+
 
         filtrar();
         searchInput.focus();

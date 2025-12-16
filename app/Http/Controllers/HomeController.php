@@ -22,124 +22,160 @@ class HomeController extends Controller
         $hasta   = request('hasta');
         $cliente = request('cliente_id');
         $tipo    = request('tipo');
+        $periodo = request('periodo');
 
-        $ventasQuery = Venta::query();
-        $facturasQuery = Factura::query();
-        $clientesQuery = Cliente::query();
+        //Periodo
+        if ($periodo) {
+            $hoy = Carbon::today();
 
-        // 🟢 FILTRO POR FECHAS
-        if ($desde) {
-            $ventasQuery->whereDate('fecha', '>=', $desde);
-            $facturasQuery->whereDate('fecha_emision', '>=', $desde);
-        }
-        if ($hasta) {
-            $ventasQuery->whereDate('fecha', '<=', $hasta);
-            $facturasQuery->whereDate('fecha_emision', '<=', $hasta);
-        }
-
-        // 🟢 FILTRO POR CLIENTE
-        if ($cliente) {
-            $ventasQuery->where('cliente_id', $cliente);
-            $facturasQuery->whereHas('venta', function ($q) use ($cliente) {
-                $q->where('cliente_id', $cliente);
-            });
-            $clientesQuery->where('id', $cliente);
-        }
-
-        // 🟢 FILTRO POR TIPO DE CLIENTE (recurrente / one-shot)
-        if ($tipo == 'recurrente') {
-            $clientesRecurrentes = Venta::selectRaw('cliente_id, COUNT(*) as total')
-                ->groupBy('cliente_id')
-                ->having('total', '>', 1)
-                ->pluck('cliente_id');
-
-            $ventasQuery->whereIn('cliente_id', $clientesRecurrentes);
-            $clientesQuery->whereHas('ventas', function ($q) {
-                $q->where('estado', '!=', 'cancelada');
-            }, '>', 1);
+            match ($periodo) {
+                'year' => [
+                    $desde = $hoy->copy()->startOfYear(),
+                    $hasta = $hoy
+                ],
+                'semester' => [
+                    $desde = $hoy->month <= 6
+                        ? $hoy->copy()->startOfYear()
+                        : $hoy->copy()->month(7)->startOfMonth(),
+                    $hasta = $hoy
+                ],
+                'quarter' => [
+                    $desde = $hoy->copy()->startOfQuarter(),
+                    $hasta = $hoy
+                ],
+                'four_months' => [
+                    $desde = match (true) {
+                        $hoy->month <= 4 => $hoy->copy()->month(1)->startOfMonth(),
+                        $hoy->month <= 8 => $hoy->copy()->month(5)->startOfMonth(),
+                        default => $hoy->copy()->month(9)->startOfMonth(),
+                    },
+                    $hasta = $hoy
+                ],
+                default => null
+            };
         }
 
-        if ($tipo == 'oneshot') {
-            $clientesOneShot = Venta::selectRaw('cliente_id, COUNT(*) as total')
-                ->groupBy('cliente_id')
-                ->having('total', '=', 1)
-                ->pluck('cliente_id');
 
-            $ventasQuery->whereIn('cliente_id', $clientesOneShot);
-            $clientesQuery->whereHas('ventas', function ($q) {
-                $q->where('estado', '!=', 'cancelada');
-            }, '=', 1);
-            
+        // 🟦 Base de Clientes (Oportunidades)
+        $clientesBase = Cliente::query()
+            ->when($cliente, fn($q) => $q->where('id', $cliente))
+            ->get();
 
-        }
+        // 🟦 Filtrar Ventas No Canceladas (validas)
+        $ventasValidas = Venta::query()
+            ->where('estado', '!=', 'cancelada')
+            ->when($desde, fn($q) => $q->whereDate('fecha', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha', '<=', $hasta))
+            ->get()
+            ->groupBy('cliente_id');
 
-        if ($tipo) {
-            $facturasQuery->whereHas('venta', function ($q) use ($tipo) {
+        // 🟦 Calcular Clientes Activos, OneShot y Recurrentes
+        $clientesActivos = $clientesBase->filter(function ($cliente) use ($ventasValidas) {
+            return isset($ventasValidas[$cliente->id]);
+        });
 
-                $sub = Venta::selectRaw('cliente_id, COUNT(*) as total')
-                    ->groupBy('cliente_id');
+        $clientesOneShot = $clientesBase->filter(function ($cliente) use ($ventasValidas) {
+            return isset($ventasValidas[$cliente->id]) && $ventasValidas[$cliente->id]->count() === 1;
+        });
 
-                if ($tipo === 'recurrente') {
-                    $sub->having('total', '>', 1);
-                } else {
-                    $sub->having('total', '=', 1);
-                }
+        $clientesRecurrentes = $clientesBase->filter(function ($cliente) use ($ventasValidas) {
+            return isset($ventasValidas[$cliente->id]) && $ventasValidas[$cliente->id]->count() > 1;
+        });
 
-                $q->whereIn('cliente_id', $sub->pluck('cliente_id'));
-            });
-        }
+        // Aplicar filtros por tipo
+        $clientesFiltradosPorTipo = match ($tipo) {
+            'oneshot'    => $clientesOneShot,
+            'recurrente' => $clientesRecurrentes,
+            default      => $clientesBase,
+        };
 
-        // Ejecutar las consultas filtradas
-        $clientesFiltrados = $clientesQuery->get();
-        $ventasFiltradas = Venta::whereIn('cliente_id', $clientesFiltrados->pluck('id'))
-                            ->when($desde, fn($q) => $q->whereDate('fecha', '>=', $desde))
-                            ->when($hasta, fn($q) => $q->whereDate('fecha', '<=', $hasta))
-                            ->where('estado', '!=', 'cancelada')
-                            ->get();
-        $facturasFiltradas = Factura::whereIn('cliente_id', $clientesFiltrados->pluck('id'))
-                            ->when($desde, fn($q) => $q->whereDate('fecha_emision', '>=', $desde))
-                            ->when($hasta, fn($q) => $q->whereDate('fecha_emision', '<=', $hasta))
-                            ->where('estado', '!=', 'anulada')
-                            ->get();
-        
+        // 🟦 Oportunidades: Clientes con o sin ventas
+        $totalOportunidades = Cliente::whereHas('ventas', function ($q) use ($desde, $hasta) {
+            if ($desde) {
+                $q->whereDate('fecha', '>=', $desde);
+            }
+            if ($hasta) {
+                $q->whereDate('fecha', '<=', $hasta);
+            }
+        })
+        ->when($cliente, fn($q) => $q->where('id', $cliente))
+        ->when($tipo === 'recurrente', fn($q) => $q->has('ventas', '>', 1))
+        ->when($tipo === 'oneshot', fn($q) => $q->has('ventas', '=', 1))
+        ->count();
 
-        // Contadores filtrados
-        $totalClientes = $ventasFiltradas
-                        ->pluck('cliente_id')
-                        ->unique()
-                        ->count();
+        // 🟦 Clientes activos: Clientes con ventas no canceladas
+        $clientesActivosCount = $clientesActivos->intersect($clientesFiltradosPorTipo)->count();
 
+        // 🟦 OneShot: Clientes con exactamente una venta no cancelada
+        $clientesOneShotCount = $clientesOneShot->intersect($clientesFiltradosPorTipo)->count();
+
+        // 🟦 Recurrentes: Clientes con más de una venta no cancelada
+        $clientesRecurrentesCount = $clientesRecurrentes->intersect($clientesFiltradosPorTipo)->count();
+
+        // 🟦 Total de ventas y facturas filtradas
+        $ventasFiltradas = Venta::whereIn('cliente_id', $clientesFiltradosPorTipo->pluck('id'))
+            ->when($desde, fn($q) => $q->whereDate('fecha', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha', '<=', $hasta))
+            ->where('estado', '!=', 'cancelada')
+            ->get();
+
+        $facturasFiltradas = Factura::whereIn('cliente_id', $clientesFiltradosPorTipo->pluck('id'))
+            ->when($desde, fn($q) => $q->whereDate('fecha_emision', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha_emision', '<=', $hasta))
+            ->where('estado', '!=', 'anulada')
+            ->get();
+
+
+        // 🟦 Contadores generales
         $totalVentas   = $ventasFiltradas->count();
         $totalFacturas = $facturasFiltradas->count();
 
-        //Aplica filtro pero no saca ningun tipo de venta ni pendiente ni cancelada (para mostrar en contadores)
-        $ventasFiltradasAll = Venta::whereIn('cliente_id', $clientesFiltrados->pluck('id'))
-                            ->when($desde, fn($q) => $q->whereDate('fecha', '>=', $desde))
-                            ->when($hasta, fn($q) => $q->whereDate('fecha', '<=', $hasta))
-                            ->get();
-
-        // Total por cobrar (ventas pendientes)
-        $cuentaPorCobrar = $ventasFiltradasAll
+        // 🟦 Total por cobrar (ventas pendientes)
+        $cuentaPorCobrar = $ventasFiltradas
             ->where('estado', 'pendiente')
             ->sum('monto');
 
-        // Total pérdidas (ventas canceladas)
-        $perdidas = $ventasFiltradasAll
+        // 🟦 Total pérdidas (ventas canceladas)
+        $perdidas = Venta::whereIn('cliente_id', $clientesFiltradosPorTipo->pluck('id'))
+            ->when($desde, fn($q) => $q->whereDate('fecha', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha', '<=', $hasta))
             ->where('estado', 'cancelada')
             ->sum('monto');
 
         // -----------------------
-        // 🟥 GRÁFICOS
+        // 🟦 GRÁFICOS DE PIE
         // -----------------------
 
-        // Determinar fechas de inicio y fin según filtros
+        // ESTADO DE VENTAS
+
+        $ventasPorEstado = $ventasFiltradas
+            ->groupBy('estado')
+            ->map(fn($g) => $g->count());
+
+        $ventasEstadoLabels = $ventasPorEstado->keys();
+        $ventasEstadoData = $ventasPorEstado->values();
+
+        // ESTADO DE FACTURAS
+
+        $facturasPorEstado = $facturasFiltradas
+            ->groupBy('estado')
+            ->map(fn($g) => $g->count());
+
+        $facturasEstadoLabels = $facturasPorEstado->keys();
+        $facturasEstadoData = $facturasPorEstado->values();
+
+        // -----------------------
+        // 🟦 GRÁFICOS
+        // -----------------------
+
+        // 🟦 Determinar fechas de inicio y fin según filtros
         $fechaInicio = $desde ? Carbon::parse($desde)->startOfMonth() 
                             : ($ventasFiltradas->min(fn($v) => $v->fecha) ? Carbon::parse($ventasFiltradas->min(fn($v) => $v->fecha))->startOfMonth() : now()->subMonths(5));
 
         $fechaFin = $hasta ? Carbon::parse($hasta)->startOfMonth() 
                         : ($ventasFiltradas->max(fn($v) => $v->fecha) ? Carbon::parse($ventasFiltradas->max(fn($v) => $v->fecha))->startOfMonth() : now());
             
-        // Periodo mensual
+        // 🟦 Periodo mensual
         $periodoMeses = CarbonPeriod::create($fechaInicio, '1 month', $fechaFin);
 
         $ventasPorMes = collect();
@@ -154,6 +190,13 @@ class HomeController extends Controller
                 ->where(fn($v) => date('Y-m', strtotime($v->fecha)) === $mesKey)
                 ->count();
 
+            // Labels 
+            $labelsVentasMes = $ventasPorMes->keys()->map(function ($mes) {
+            return Carbon::createFromFormat('Y-m', $mes)
+                ->locale('es')
+                ->translatedFormat('M.y'); // ene.25
+        });
+
             // Montos pagados
             $montosPorMes[$mesKey] = $ventasFiltradas
                 ->where('estado', 'pagada')
@@ -164,50 +207,6 @@ class HomeController extends Controller
             $flujoCaja[$mesKey] = $montosPorMes[$mesKey];
         }
 
-        // 🟦 Ventas por mes
-      
-
-        $labelsMeses = $ventasPorMes->keys()->map(function ($mes) {
-            return Carbon::createFromFormat('Y-m', $mes)
-                ->locale('es')
-                ->translatedFormat('M.y'); // ene.25
-        });
-
-        // 🟦 Montos por mes
-        // Montos por mes (solo ventas pagadas)
-      
-
-        $labelsMesesMonto = $montosPorMes->keys()->map(function ($mes) {
-            return Carbon::createFromFormat('Y-m', $mes)
-                ->locale('es')
-                ->translatedFormat('M.y'); // ene.25
-        });
-
-        // =======================================
-        // NUEVO GRÁFICO: ESTADO DE VENTAS
-        // =======================================
-        $ventasEstado = $ventasFiltradas
-            ->groupBy('estado')
-            ->map->count();
-
-        // =======================================
-        // NUEVO GRÁFICO: FLUJO REAL DE CAJA
-        // (solo montos pagados por mes)
-        // =======================================
-      
-
-        $labelsMesesFlujo = $flujoCaja->keys()->map(function ($mes) {
-            return Carbon::createFromFormat('Y-m', $mes)
-                ->locale('es')
-                ->translatedFormat('M.y'); // ene.25
-        });
-
-
-        // 🟦 Estado facturas
-        $facturasEstado = $facturasFiltradas
-            ->groupBy('estado')
-            ->map->count();
-
         // 🟦 Ventas por cliente
         $ventasPorCliente = $ventasFiltradas
             ->groupBy('cliente_id')
@@ -216,77 +215,38 @@ class HomeController extends Controller
         $nombresClientes = Cliente::whereIn('id', $ventasPorCliente->keys())
             ->pluck('nombre', 'id');
 
-
+        // --------------------------
         // 🔹 Embudo de ventas
+        // --------------------------
 
-        // Filtro por cliente específico
-        if ($cliente) {
-            $clientesQuery->where('id', $cliente);
-        }
-
-        // Obtener clientes filtrados
-
-                $clientesFiltrados = $clientesQuery->get();
-
-        $totalOportunidades = Cliente::whereHas('ventas', function($query) use ($desde, $hasta) {
-                                if ($desde) {
-                                    $query->whereDate('fecha', '>=', $desde);
-                                }
-                                if ($hasta) {
-                                    $query->whereDate('fecha', '<=', $hasta);
-                                }
-                            })->count();
-        $clientesActivos    = $clientesFiltrados->filter(function ($c) use ($desde, $hasta) {
-                                return $c->ventas
-                                    ->where('estado', '!=', 'cancelada')
-                                    ->when($desde, fn($ventas) => $ventas->where('fecha', '>=', $desde))
-                                    ->when($hasta, fn($ventas) => $ventas->where('fecha', '<=', $hasta))
-                                    ->count() > 0;
-                            })->count();
-        $clientesOneShot    = $clientesFiltrados->filter(function ($c) use ($desde, $hasta) {
-                                $ventasNoCanceladas = $c->ventas
-                                    ->where('estado', '!=', 'cancelada')
-                                    ->when($desde, fn($ventas) => $ventas->where('fecha', '>=', $desde))
-                                    ->when($hasta, fn($ventas) => $ventas->where('fecha', '<=', $hasta));
-
-                                return $ventasNoCanceladas->count() === 1;
-                            })->count();
-        $clientesRecurrentes = $clientesFiltrados->filter(function ($c) use ($desde, $hasta) {
-                                $ventasNoCanceladas = $c->ventas
-                                    ->where('estado', '!=', 'cancelada')
-                                    ->when($desde, fn($ventas) => $ventas->where('fecha', '>=', $desde))
-                                    ->when($hasta, fn($ventas) => $ventas->where('fecha', '<=', $hasta));
-
-                                return $ventasNoCanceladas->count() > 1;
-                            })->count();
-        $ventasNoCanceladas  = $ventasFiltradas->where('estado', '!=', 'cancelada')->count();
-
-        $tasaConversion = $totalOportunidades > 0 ? round(($clientesActivos / $totalOportunidades) * 100, 2) : 0;
-
+        // 📊 Filtros activos
+        $tasaConversion = $totalOportunidades > 0 ? round(($clientesActivosCount / $totalOportunidades) * 100, 2) : 0;
 
         return view('home', compact(
             'listaClientes',
-            'totalClientes',
+            
             'totalVentas',
             'totalFacturas',
             'ventasPorMes',
             'montosPorMes',
-            'facturasEstado',
+            'labelsVentasMes',
+            
             'ventasPorCliente',
             'nombresClientes',
             'cuentaPorCobrar',
             'perdidas',
-            'ventasEstado',
+            
             'flujoCaja',
-            'labelsMeses',
-            'labelsMesesMonto',
-            'labelsMesesFlujo',
+            
             'ventasFiltradas',
             'totalOportunidades',
-            'clientesActivos',
-            'clientesOneShot',
-            'clientesRecurrentes',
-            'ventasNoCanceladas',
+            'clientesActivosCount',
+            'clientesOneShotCount',
+            'clientesRecurrentesCount',
+            'ventasEstadoLabels',
+            'ventasEstadoData',
+            'facturasEstadoLabels',
+            'facturasEstadoData',
             'tasaConversion',
         ));
     }

@@ -71,18 +71,21 @@
                 <tr>
                     <td>{{ $cliente->nombre }}</td>
                     <td>{{ $cliente->rut }}</td>
-                    <td>{{ $cliente->correo }}</td>
+                    <td class="email-cell">{!! str_replace('@', '@<wbr>', e($cliente->correo)) !!}</td>
                     <td>{{ $cliente->telefono }}</td>
                     <td>{{ $cliente->rubro }}</td>
-                    <td class="text-center d-flex justify-content-around">
-                        <a href="{{ route('clientes.edit', $cliente->id) }}" class="btn btn-sm btn-secondary">Editar</a>
-                        @if(auth()->user()->role === 'admin')
-                        <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" style="display:inline">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">Eliminar</button>
-                        </form>
-                        @endif
+                    <td class="text-center">
+                        <div class="d-flex justify-content-around">
+                            <a href="{{ route('clientes.edit', $cliente->id) }}" class="btn btn-sm btn-secondary">Editar</a>
+                            @if(auth()->user()->role === 'admin')
+                            <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" style="display:inline">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que deseas eliminar este cliente?')">Eliminar</button>
+                            </form>
+                            @endif
+                        </div>
+                        
                     </td>
                 </tr>
             @endforeach

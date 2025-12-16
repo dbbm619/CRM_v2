@@ -90,35 +90,48 @@
     </div>
 
     <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const clienteSelect = document.getElementById('clienteSelect');
-    const ventaSelect = document.getElementById('ventaSelect');
+        const OLD_CLIENTE_ID = "{{ old('cliente_id') }}";
+        const OLD_VENTA_ID = "{{ old('venta_id') }}";
+        document.addEventListener('DOMContentLoaded', () => {
+        const clienteSelect = document.getElementById('clienteSelect');
+        const ventaSelect = document.getElementById('ventaSelect');
 
-    clienteSelect.addEventListener('change', async function () {
-        const clienteId = this.value;
+        async function cargarVentas(clienteId, ventaSeleccionada = null) {
+            ventaSelect.innerHTML = '<option value="">Seleccione una venta</option>';
 
-        // Reset ventas
-        ventaSelect.innerHTML = '<option value="">Seleccione una venta</option>';
+            if (!clienteId) return;
 
-        if (!clienteId) return;
+            try {
+                const response = await fetch(`/clientes/${clienteId}/ventas`);
+                const ventas = await response.json();
 
-        try {
-            const response = await fetch(`/clientes/${clienteId}/ventas`);
-            const ventas = await response.json();
+                ventas.forEach(venta => {
+                    const option = document.createElement('option');
+                    option.value = venta.id;
+                    option.textContent =
+                        `Venta #${venta.id} — $${Number(venta.monto).toLocaleString('es-CL')} — ${venta.fecha}`;
 
-            ventas.forEach(venta => {
-                const option = document.createElement('option');
-                option.value = venta.id;
-                option.textContent =
-                    `Venta #${venta.id} — $${Number(venta.monto).toLocaleString('es-CL')} — ${venta.fecha}`;
+                    if (ventaSeleccionada && venta.id == ventaSeleccionada) {
+                        option.selected = true;
+                    }
 
-                ventaSelect.appendChild(option);
-            });
+                    ventaSelect.appendChild(option);
+                });
 
-        } catch (error) {
-            console.error('Error cargando ventas:', error);
+            } catch (error) {
+                console.error('Error cargando ventas:', error);
+            }
+        }
+
+        // Cambio manual de cliente
+        clienteSelect.addEventListener('change', function () {
+            cargarVentas(this.value);
+        });
+
+        // 🧠 RECUPERACIÓN POST-ERROR
+        if (OLD_CLIENTE_ID) {
+            cargarVentas(OLD_CLIENTE_ID, OLD_VENTA_ID);
         }
     });
-});
 </script>
 @endsection
