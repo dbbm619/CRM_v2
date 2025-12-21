@@ -1,17 +1,17 @@
 {{--
-    Vista de correo para el "Snapshot" diario de facturas no pagadas.
+    Vista de correo para el informe de facturas sin pagar.
     - Muestra: número de factura, nombre del cliente, fecha de la factura y monto.
     - Incluye totales en el encabezado y un resumen al final.
-    - No incluye archivos adjuntos; todo el detalle aparece en el cuerpo del correo.
+    - El archivo CSV con el detalle se adjunta al correo.
 --}}
 <html>
 <head>
     <meta charset="utf-8">
 </head>
 <body>
-    <h2>Snapshot de facturas no pagadas - {{ $date }}</h2>
+    <h2>Informe de facturas sin pagar - {{ $date }}</h2>
 
-    {{-- Totales generales del snapshot --}}
+    {{-- Totales generales --}}
     <p><strong>Total facturas:</strong> {{ $totalCount }}</p>
     <p><strong>Monto total:</strong> {{ number_format($totalAmount, 2) }}</p>
 
@@ -26,7 +26,7 @@
             </tr>
         </thead>
         <tbody>
-            {{-- Recorre cada registro del snapshot y lo muestra en una fila --}}
+            {{-- Recorre cada registro y lo muestra en una fila --}}
             @foreach ($snapshots as $s)
                 <tr>
                     <td>{{ $s->numero_factura }}</td>
