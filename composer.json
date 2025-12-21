@@ -10,6 +10,7 @@
         "anhskohbo/no-captcha": "^3.7",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
+        "maatwebsite/excel": "4.x-dev",
         "spatie/laravel-permission": "^6.23"
     },
     "require-dev": {

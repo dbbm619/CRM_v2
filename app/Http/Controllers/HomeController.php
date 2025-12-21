@@ -7,13 +7,16 @@ use App\Models\Venta;
 use App\Models\Factura;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\IngresosPorMesExport;
+use App\Exports\FlujoCajaMensualExport;
 
 class HomeController extends Controller
 {
     public function index()
-    {   
+    {
 
-        
+
         // 🟦 Lista de clientes para el filtro
         $listaClientes = Cliente::pluck('nombre', 'id');
 
@@ -98,10 +101,10 @@ class HomeController extends Controller
                 $q->whereDate('fecha', '<=', $hasta);
             }
         })
-        ->when($cliente, fn($q) => $q->where('id', $cliente))
-        ->when($tipo === 'recurrente', fn($q) => $q->has('ventas', '>', 1))
-        ->when($tipo === 'oneshot', fn($q) => $q->has('ventas', '=', 1))
-        ->count();
+            ->when($cliente, fn($q) => $q->where('id', $cliente))
+            ->when($tipo === 'recurrente', fn($q) => $q->has('ventas', '>', 1))
+            ->when($tipo === 'oneshot', fn($q) => $q->has('ventas', '=', 1))
+            ->count();
 
         // 🟦 Clientes activos: Clientes con ventas no canceladas
         $clientesActivosCount = $clientesActivos->intersect($clientesFiltradosPorTipo)->count();
@@ -169,12 +172,12 @@ class HomeController extends Controller
         // -----------------------
 
         // 🟦 Determinar fechas de inicio y fin según filtros
-        $fechaInicio = $desde ? Carbon::parse($desde)->startOfMonth() 
-                            : ($ventasFiltradas->min(fn($v) => $v->fecha) ? Carbon::parse($ventasFiltradas->min(fn($v) => $v->fecha))->startOfMonth() : now()->subMonths(5));
+        $fechaInicio = $desde ? Carbon::parse($desde)->startOfMonth()
+            : ($ventasFiltradas->min(fn($v) => $v->fecha) ? Carbon::parse($ventasFiltradas->min(fn($v) => $v->fecha))->startOfMonth() : now()->subMonths(5));
 
-        $fechaFin = $hasta ? Carbon::parse($hasta)->startOfMonth() 
-                        : ($ventasFiltradas->max(fn($v) => $v->fecha) ? Carbon::parse($ventasFiltradas->max(fn($v) => $v->fecha))->startOfMonth() : now());
-            
+        $fechaFin = $hasta ? Carbon::parse($hasta)->startOfMonth()
+            : ($ventasFiltradas->max(fn($v) => $v->fecha) ? Carbon::parse($ventasFiltradas->max(fn($v) => $v->fecha))->startOfMonth() : now());
+
         // 🟦 Periodo mensual
         $periodoMeses = CarbonPeriod::create($fechaInicio, '1 month', $fechaFin);
 
@@ -192,10 +195,10 @@ class HomeController extends Controller
 
             // Labels 
             $labelsVentasMes = $ventasPorMes->keys()->map(function ($mes) {
-            return Carbon::createFromFormat('Y-m', $mes)
-                ->locale('es')
-                ->translatedFormat('M.y'); // ene.25
-        });
+                return Carbon::createFromFormat('Y-m', $mes)
+                    ->locale('es')
+                    ->translatedFormat('M.y'); // ene.25
+            });
 
             // Montos pagados
             $montosPorMes[$mesKey] = $ventasFiltradas
@@ -224,20 +227,20 @@ class HomeController extends Controller
 
         return view('home', compact(
             'listaClientes',
-            
+
             'totalVentas',
             'totalFacturas',
             'ventasPorMes',
             'montosPorMes',
             'labelsVentasMes',
-            
+
             'ventasPorCliente',
             'nombresClientes',
             'cuentaPorCobrar',
             'perdidas',
-            
+
             'flujoCaja',
-            
+
             'ventasFiltradas',
             'totalOportunidades',
             'clientesActivosCount',
@@ -260,5 +263,73 @@ class HomeController extends Controller
         ]);
     }
 
-    
+    public function exportIngresosPorMes()
+    {
+        $ventasQuery = Venta::where('estado', 'pagada');
+
+        // Filtros
+        if (request('desde')) {
+            $ventasQuery->whereDate('fecha', '>=', request('desde'));
+        }
+
+        if (request('hasta')) {
+            $ventasQuery->whereDate('fecha', '<=', request('hasta'));
+        }
+
+        if (request('cliente_id')) {
+            $ventasQuery->where('cliente_id', request('cliente_id'));
+        }
+
+        $ventas = $ventasQuery
+            ->selectRaw("DATE_FORMAT(fecha, '%Y-%m') as periodo, SUM(monto) as total")
+            ->groupBy('periodo')
+            ->orderBy('periodo')
+            ->get();
+
+        $data = $ventas->map(fn($v) => [
+            $v->periodo,
+            $v->total
+        ])->toArray();
+
+
+        return Excel::download(
+            new IngresosPorMesExport($data),
+            'ingresos_totales_por_mes.xlsx'
+        );
+    }
+
+
+    public function exportFlujoCajaMensual()
+    {
+        $ventasQuery = Venta::where('estado', 'pagada');
+
+        // Filtros
+        if (request('desde')) {
+            $ventasQuery->whereDate('fecha', '>=', request('desde'));
+        }
+
+        if (request('hasta')) {
+            $ventasQuery->whereDate('fecha', '<=', request('hasta'));
+        }
+
+        if (request('cliente_id')) {
+            $ventasQuery->where('cliente_id', request('cliente_id'));
+        }
+
+        $ventas = $ventasQuery
+            ->selectRaw("DATE_FORMAT(fecha, '%Y-%m') as periodo, SUM(monto) as total")
+            ->groupBy('periodo')
+            ->orderBy('periodo')
+            ->get();
+
+        $data = $ventas->map(fn($v) => [
+            $v->periodo,
+            $v->total
+        ])->toArray();
+
+        return Excel::download(
+            new FlujoCajaMensualExport($data),
+            'flujo_real_caja_mensual.xlsx'
+        );
+    }
 }

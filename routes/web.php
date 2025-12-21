@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 #Route::get('/dashboard', function () {
- #   return view('home');
+#   return view('home');
 #})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/dashboard', [HomeController::class, 'index'])
@@ -75,11 +75,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 Route::patch('/clientes/{cliente}/restore', [ClienteController::class, 'restore'])
-    ->middleware(['auth','role:admin'])
+    ->middleware(['auth', 'role:admin'])
     ->name('clientes.restore');
 
 Route::get('/clientes-eliminados', [ClienteController::class, 'eliminados'])
-    ->middleware(['auth','role:admin'])
+    ->middleware(['auth', 'role:admin'])
     ->name('clientes.eliminados');
 
-require __DIR__.'/auth.php';
+Route::get('/export/ingresos-por-mes', [HomeController::class, 'exportIngresosPorMes'])
+    ->name('export.ingresos');
+
+Route::get('/export/flujo-caja', [HomeController::class, 'exportFlujoCajaMensual'])
+    ->name('export.flujo');
+
+require __DIR__ . '/auth.php';

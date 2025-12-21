@@ -27,7 +27,7 @@ class ConfirmablePasswordController extends Controller
         if (! Auth::guard('web')->validate([
             'email' => $request->user()->email,
             'password' => $request->password,
-            'g-recaptcha-response' => ['required', 'captcha'],
+           // 'g-recaptcha-response' => ['required', 'captcha'],
         ])) {
             throw ValidationException::withMessages([
                 'password' => __('auth.password'),

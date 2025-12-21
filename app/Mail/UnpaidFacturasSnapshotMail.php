@@ -59,33 +59,7 @@ class UnpaidFacturasSnapshotMail extends Mailable
      */
     public function build()
     {
-        $subject = "Informe de facturas sin pagar - {$this->date}";
-
-        // Generar CSV en memoria
-        $headers = ['factura_id', 'numero_factura', 'cliente_nombre', 'factura_fecha', 'monto'];
-        $handle = fopen('php://temp', 'r+');
-        // Escribir cabecera
-        fputcsv($handle, $headers);
-
-        foreach ($this->snapshots as $s) {
-            fputcsv($handle, [
-                $s->factura_id,
-                $s->numero_factura,
-                $s->cliente_nombre,
-                $s->factura_fecha,
-                // Asegurar formato numérico con 2 decimales
-                number_format($s->monto, 2, '.', ''),
-            ]);
-        }
-
-        rewind($handle);
-        $csvContent = stream_get_contents($handle);
-        fclose($handle);
-
-        // Añadir BOM UTF-8 para compatibilidad con Excel
-        $csvWithBom = "\xEF\xBB\xBF" . $csvContent;
-
-        $filename = "informe_facturas_sin_pagar_{$this->date}.csv";
+        $subject = "Snapshot facturas no pagadas - {$this->date}";
 
         $mail = $this->subject($subject)
             ->view('emails.unpaid_facturas_snapshot')
@@ -94,10 +68,8 @@ class UnpaidFacturasSnapshotMail extends Mailable
                 'date' => $this->date,
                 'totalCount' => $this->totalCount,
                 'totalAmount' => $this->totalAmount,
-            ])
-            ->attachData($csvWithBom, $filename, [
-                'mime' => 'text/csv',
             ]);
+
 
         return $mail;
     }
