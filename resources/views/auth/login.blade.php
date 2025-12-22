@@ -11,7 +11,7 @@
 
             <x-input-label  class="text-primary" for="email" :value="__('Email')"/>
             <x-text-input id="email" class="block mt-1 w-full text-primary" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="flex items-center justify-center mt-2 font-bold text-lg" />
+            <x-input-error :messages="$errors->get('email')" class="flex items-center justify-center mt-2 font-bold text-lg text-red-700 bg-red-100 px-3 py-1 rounded" />
 
         </div>
 
@@ -24,7 +24,7 @@
                             name="password"
                             required autocomplete="current-password" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2 text-danger" />
         </div>
 
         <!-- Remember Me -->

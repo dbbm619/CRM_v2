@@ -13,7 +13,6 @@ class HomeControllerRestore extends Controller
     public function index()
     {   
 
-        
         // 🟦 Lista de clientes para el filtro
         $listaClientes = Cliente::pluck('nombre', 'id');
 
@@ -141,7 +140,6 @@ class HomeControllerRestore extends Controller
             
         // Periodo mensual
         $periodoMeses = CarbonPeriod::create($fechaInicio, '1 month', $fechaFin);
-
         $ventasPorMes = collect();
         $montosPorMes = collect();
         $flujoCaja = collect();

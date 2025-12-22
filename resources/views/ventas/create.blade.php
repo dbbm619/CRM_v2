@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1 class="mb-4 crm-page-title">Nueva Venta</h1>
+        <h1 class="mb-4 crm-page-title">Agregar Venta</h1>
 
         <div class="principal col-md-7">
         @if ($errors->any())

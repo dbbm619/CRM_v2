@@ -155,22 +155,25 @@
                 <div class="col-md-11 mt-5 crm-cardest align-content-around">
                     <h4 class="text-center mt-3">Ingresos Totales por Mes</h4>
                     <canvas class="mb-3" id="montosMesChart" width="200" height="70"></canvas>
+                    <div class="text-center pb-3">
                     <a href="{{ route('export.ingresos', request()->query()) }}" class="btn btn-success btn-sm mt-2">
                         Exportar a Excel
                     </a>
+                    </div>
                 </div>
             </div>
 
-            <div class="row justify-content-around">
+            <!-- <div class="row justify-content-around">
                 <div class="col-md-11 mt-5 crm-cardest align-content-around">
                     <h4 class="text-center mt-3">Flujo Real de Caja Mensual</h4>
                     <canvas class="mb-3" id="flujoCajaChart" width="200" height="70"></canvas>
+                    <div class="text-center pb-3">
                     <a href="{{ route('export.flujo', request()->query()) }}" class="btn btn-success btn-sm mt-2">
                         Exportar a Excel
                     </a>
-
+                    </div>
                 </div>
-            </div>
+            </div> -->
 
             <div class="row justify-content-around mt-5">
 
@@ -319,52 +322,52 @@
         });
 
         // Gráfico Flujo Real De Caja
-        const flujoCajaCtx = document.getElementById('flujoCajaChart').getContext('2d');
-        new Chart(flujoCajaCtx, {
-            type: 'line',
-            data: {
-                labels: @json($labelsVentasMes),
+        // const flujoCajaCtx = document.getElementById('flujoCajaChart').getContext('2d');
+        // new Chart(flujoCajaCtx, {
+        //     type: 'line',
+        //     data: {
+        //         labels: @json($labelsVentasMes),
 
-                datasets: [{
-                    label: 'Ingreso Real ($)',
-                    data: @json($flujoCaja->values()),
-                    borderWidth: 2,
-                    fill: true,
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        title: {
-                            display: true,
-                            text: '$ CLP',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
-                            }
-                        },
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            precision: 0
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.parsed.y; // solo el número
-                            }
-                        }
-                    }
-                }
-            }
+        //         datasets: [{
+        //             label: 'Ingreso Real ($)',
+        //             data: @json($flujoCaja->values()),
+        //             borderWidth: 2,
+        //             fill: true,
+        //         }]
+        //     },
+        //     options: {
+        //         scales: {
+        //             y: {
+        //                 title: {
+        //                     display: true,
+        //                     text: '$ CLP',
+        //                     font: {
+        //                         size: 14,
+        //                         weight: 'bold'
+        //                     }
+        //                 },
+        //                 beginAtZero: true,
+        //                 ticks: {
+        //                     stepSize: 1,
+        //                     precision: 0
+        //                 }
+        //             }
+        //         },
+        //         plugins: {
+        //             legend: {
+        //                 display: false
+        //             },
+        //             tooltip: {
+        //                 callbacks: {
+        //                     label: function(context) {
+        //                         return context.parsed.y; // solo el número
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
 
-        });
+        // });
 
         // Gráfico Ventas por Cliente
         const ventasClienteCtx = document.getElementById('ventasClienteChart').getContext('2d');

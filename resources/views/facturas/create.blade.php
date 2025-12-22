@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1 class="mb-4 crm-page-title">Crear Factura</h1>
+        <h1 class="mb-4 crm-page-title">Agregar Factura</h1>
 
         <div class="principal col-md-7">
         {{-- Recuadro de errores (igual que Clientes/Ventas) --}}
